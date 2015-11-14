@@ -1,0 +1,18 @@
+{
+  "name": "COMP307",
+  "version": "1.0.0",
+  "description": "Fantasy Everything",
+  "scripts": {
+  	"start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/davidzhou94/COMP307.git"
+  },
+  "author": "Grady Weber, Valerie Saunders Duncan, David Zhou",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/davidzhou94/COMP307/issues"
+  },
+  "homepage": "https://github.com/davidzhou94/COMP307"
+}
