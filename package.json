@@ -1,19 +1,21 @@
 {
-  "name": "gweber",
+  "name": "comp307",
   "version": "1.0.0",
-  "description": "Grady Weber's Personal Website",
+  "description": "COMP 307 Project - Fantasy Everything",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
   },
-  "author": "Grady Weber",
+  "author": "David, Grady, Valerie",
   "scripts": {
     "start": "node server.js"
   },
-  "license": "ISC",
   "dependencies": {
     "bootstrap": "^3.3.5",
-    "express": "^4.13.3"
+    "express": "^4.13.3",
+    "morgan"     : "~1.2.2",
+    "body-parser": "~1.5.2",
+    "method-override": "~2.1.2"
   }
 }

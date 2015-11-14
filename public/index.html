@@ -1,6 +1,4 @@
-
-<!DOCTYPE html>
-<html lang="en">
+<html ng-app="teams" lang="en">
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -10,21 +8,41 @@
     <meta name="author" content="">
     <link rel="icon" href="../../favicon.ico">
 
-    <title>Starter Template for Bootstrap</title>
+    <title>Fantasy Everything</title>
 
-    <!-- Bootstrap core CSS -->
+    <!-- Scripts -->
     <link href="./css/bootstrap.min.css" rel="stylesheet">
-
-
   </head>
 
-  <body>
-    <p> I'm Mr. Meeseeks, look at me! </p>
+  <body ng-controller="mainController">
+    <div class="container">
+    
+      <!-- HEADER AND TODO COUNT -->
+      <div class="jumbotron text-center">
+        <h1>Here are teams: <span class="label label-info">{{ teams.length }}</span></h1>
+      </div>
+          
+          
+      <!-- TEAM LIST -->
+      <div id="team-list" class="row">
+        <div class="col-sm-4 col-sm-offset-4">
 
-    <!-- Bootstrap core JavaScript
+          <!-- LOOP OVER THE TEAMS IN $scope.teams -->
+          <div ng-repeat="team in teams">
+            {{ team.text }}
+          </div>
+
+        </div>
+      </div>
+      
+    </div>
+
+    <!-- SCRIPTS
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-    <script src="./js/bootstrap.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
+    <script src="./js/bootstrap.min.js"></script>    
+    <script src="core.js"></script>
   </body>
 </html>
