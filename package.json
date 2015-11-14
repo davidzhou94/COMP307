@@ -1,18 +1,19 @@
 {
-  "name": "COMP307",
+  "name": "gweber",
   "version": "1.0.0",
-  "description": "Fantasy Everything",
+  "description": "Grady Weber's Personal Website",
+  "main": "server.js",
   "scripts": {
-  	"start": "node server.js"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/davidzhou94/COMP307.git"
+  "author": "Grady Weber",
+  "scripts": {
+    "start": "node server.js"
   },
-  "author": "Grady Weber, Valerie Saunders Duncan, David Zhou",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/davidzhou94/COMP307/issues"
-  },
-  "homepage": "https://github.com/davidzhou94/COMP307"
+  "dependencies": {
+    "bootstrap": "^3.3.5",
+    "express": "^4.13.3"
+  }
 }
