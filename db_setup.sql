@@ -1,6 +1,6 @@
 # created a database named 'db', and 'testuser' with password 'password'.
 # links for reference/replication: https://www.linode.com/docs/databases/mysql/how-to-install-mysql-on-ubuntu-14-04
-
+USE db;
 CREATE TABLE player
 (
 	pid 				INTEGER 		AUTO_INCREMENT PRIMARY KEY,
