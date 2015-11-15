@@ -40,15 +40,15 @@ fantasyApp.config(['$routeProvider',
   function($routeProvider) {
     $routeProvider.
       when('/team', {
-        templateUrl : 'team.html',
+        templateUrl : 'partials/team.html',
         controller : 'teamController'
       }).
       when('/league/:leagueid', {
-        templateUrl : 'league.html',
+        templateUrl : 'partials/league.html',
         controller : 'leagueController'
       }).
       when('/home', {
-        templateUrl : 'home.html',
+        templateUrl : 'partials/home.html',
         controller : 'homeController'
       }).
       otherwise({
