@@ -18,10 +18,6 @@ fantasyControllers.controller('leagueController', ['$scope', '$http', '$routePar
 
 fantasyControllers.controller('homeController', ['$scope', '$http', '$location', 
   function ($scope, $http, $location) {
-    $scope.go = function ( path ) {
-      console.log("fuck this");
-      $location.path( path );
-    };
     $scope.formData = {};
 
     // when landing on the page, get all teams and show them
