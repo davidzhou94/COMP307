@@ -23,7 +23,7 @@ app.get('/api/teams', function(req, res) {
 
 app.get('*', function(req, res) {
   // load the single view file (angular will handle the page changes on the front-end)
-  res.sendfile('./public/index.html');
+  res.sendFile('./public/index.html');
 });
 
 var server = app.listen(8000, function(){
