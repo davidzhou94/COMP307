@@ -1,0 +1,21 @@
+<div class="container">
+
+  <!-- HEADER AND TEAM COUNT -->
+  <div class="jumbotron text-center">
+    <h1>Here are teams: <span ng-cloak class="label label-info">{{ teams.length }}</span></h1>
+  </div>
+      
+      
+  <!-- TEAM LIST -->
+  <div id="team-list" class="row">
+    <div class="col-sm-4 col-sm-offset-4">
+
+      <!-- LOOP OVER THE TEAMS IN $scope.teams -->
+      <div ng-cloak ng-repeat="team in teams">
+        {{ team.text }}
+      </div>
+
+    </div>
+  </div>
+  
+</div>

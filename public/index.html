@@ -1,48 +1,35 @@
-<html ng-app="teams" lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-    <meta name="description" content="">
-    <meta name="author" content="">
-    <link rel="icon" href="../../favicon.ico">
+<!doctype html>
+<html lang="en" ng-app="fantasyApp">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <link rel="icon" href="img/favicon.ico">
 
-    <title>Fantasy Everything</title>
+  <title>Fantasy Everything</title>
+  
+  <!-- Bootstrap CSS via CDN -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  
+  <!-- Custom CSS -->
+  <link href="./css/index.css" rel="stylesheet">
+  <meta charset="utf-8">
+  
+  <!-- Various dependencies via CDN -->
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.1/angular.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.1/angular-route.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  
+  <!-- Our app -->
+  <script src="js/core.js"></script>
+</head>
+<body>
 
-    <link href="./css/bootstrap.min.css" rel="stylesheet">
-    <link href="./css/index.css" rel="stylesheet">
-  </head>
+  <div ng-view></div>
 
-  <body ng-controller="mainController">
-    <div class="container">
-    
-      <!-- HEADER AND TODO COUNT -->
-      <div class="jumbotron text-center">
-        <h1>Here are teams: <span ng-cloak class="label label-info">{{ teams.length }}</span></h1>
-      </div>
-          
-          
-      <!-- TEAM LIST -->
-      <div id="team-list" class="row">
-        <div class="col-sm-4 col-sm-offset-4">
-
-          <!-- LOOP OVER THE TEAMS IN $scope.teams -->
-          <div ng-cloak ng-repeat="team in teams">
-            {{ team.text }}
-          </div>
-
-        </div>
-      </div>
-      
-    </div>
-
-    <!-- SCRIPTS
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
-    <script src="./js/bootstrap.min.js"></script>    
-    <script src="./js/core.js"></script>
-  </body>
+</body>
 </html>

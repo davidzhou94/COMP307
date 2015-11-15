@@ -1,0 +1,25 @@
+<div class="container">
+
+  <!-- HEADER AND LEAGUE COUNT -->
+  <div class="jumbotron text-center">
+    <h1>Here are leagues: <span ng-cloak class="label label-info">{{ leagues.length }}</span></h1>
+  </div>
+      
+      
+  <!-- LEAGUE LIST -->
+  <div id="league-list" class="row">
+    <div class="col-sm-4 col-sm-offset-4">
+      <button type="button" class="btn btn-default" ng-click="go('#/league/1')">Rare Pepe</button>
+
+      <!-- LOOP OVER THE LEAGUES IN $scope.leagues -->
+      <div ng-cloak ng-repeat="league in leagues">
+        {{ league.text }}
+        <a href="#/league/{{league.id}}">
+          <button type="button" class="btn btn-default">View</button>
+        </a>
+      </div>
+
+    </div>
+  </div>
+  
+</div>
