@@ -28,7 +28,7 @@ app.get('/api/teams/:league', function(req, res) {
       {id : 1, text : "Team Morty"},
       {id : 2, text : "Team Rick"},
       {id : 3, text : "Team Summer"},
-      (id : 4, text : "Team Beth"},
+      {id : 4, text : "Team Beth"},
       {id : 5, text : "Team Jerry AKA Why do I have to be last!?!"}
     ]);
   }
