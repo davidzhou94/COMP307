@@ -53,13 +53,13 @@ CREATE TABLE managed_rule
 	m_rid 				INTEGER		AUTO_INCREMENT PRIMARY KEY,
 	managed_actor_id 	INTEGER		REFERENCES managed_actor(m_actor_id),
 	managed_action_id 	INTEGER		REFERENCES managed_action(m_action_id),
-	fulfilled 			TINYINT(1)
+	fulfilled 			INTEGER
 );
 CREATE TABLE drafted_rule
 (
 	participated_id		INTEGER		AUTO_INCREMENT PRIMARY KEY,
 	actor_id 			INTEGER		REFERENCES actor(actor_id),
 	action_id 			INTEGER		REFERENCES action(action_id),
-	fulfilled 			TINYINT(1)	,
+	fulfilled 			INTEGER		,
 	managed_rule_id 	INTEGER		REFERENCES managed_rule(m_rid)
 );
