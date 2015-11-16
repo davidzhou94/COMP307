@@ -5,6 +5,7 @@ var morgan = require('morgan');             // log requests to the console (expr
 var bodyParser = require('body-parser');    // pull information from HTML POST (express4)
 var methodOverride = require('method-override'); // simulate DELETE and PUT (express4)
 var path = require('path');
+var mysql = require('mysql');
 
 app.use(express.static(__dirname + '/public'));                 // set the static files location /public/img will be /img for users
 app.use(morgan('dev'));                                         // log every request to the console
@@ -42,7 +43,32 @@ app.get('/api/leagues', function(req, res) {
     {id : 2, text : "League 2"}
   ]);
 });
-
+app.post('/api/login', function(req, res){
+    loginObj = req.body;
+    var connection = mysql.createConnection(
+        {
+          host     : 'localhost',
+          user     : 'root',
+          password : '',
+          database : 'db',
+        }
+    );
+    connection.connect();
+    var queryString = 'USE db; SELECT username, password FROM player WHERE username=\'' + 
+        loginObj.username + '\';';
+    console.log(queryString);
+    connection.query(queryString, function(err, rows, fields) {
+        if (err){
+            console.log("Query error:" + err);
+        }
+    
+        for (var i in rows) {
+            console.log(rows[i].username + " " + rows[i].password);
+        }
+    });
+    
+   connection.end();
+});
 app.get('*', function(req, res) {
   // load the single view file (angular will handle the page changes on the front-end)
   res.sendFile(path.join(__dirname, './public', 'index.html'));

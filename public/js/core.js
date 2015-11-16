@@ -3,32 +3,43 @@ var fantasyControllers = angular.module('fantasyControllers', []);
 
 fantasyControllers.controller('leagueController', ['$scope', '$http', '$routeParams', 
   function ($scope, $http, $routeParams) {
-    $scope.formData = {};
 
     // when landing on the page, get all teams and show them
     $http.get('/api/teams/' + $routeParams.leagueid)
-      .success(function(data) {
+      .then(function(data) {
         $scope.teams = data;
         console.log(data);
-      })
-      .error(function(data) {
+      },
+      function(data) {
         console.log('Error: ' + data);
       });
 }]);
 
 fantasyControllers.controller('homeController', ['$scope', '$http', '$location', 
   function ($scope, $http, $location) {
-    $scope.formData = {};
 
     // when landing on the page, get all teams and show them
     $http.get('/api/leagues')
-      .success(function(data) {
+      .then(function(data) {
         $scope.leagues = data;
         console.log(data);
-      })
-      .error(function(data) {
+      },
+      function(data) {
         console.log('Error: ' + data);
       });
+}]);
+
+fantasyControllers.controller('loginController', ['$scope', '$http', '$location', 
+  function ($scope, $http, $location) {
+    $scope.login = function(){
+      $http.post('/api/login', JSON.stringify($scope.loginCredentials))
+        .then(function(data) {
+          
+        },
+        function(data) {
+          console.log('Error: ' + data);
+        });
+    }
 }]);
 
 var fantasyApp = angular.module('fantasyApp', [
@@ -51,8 +62,12 @@ fantasyApp.config(['$routeProvider',
         templateUrl : 'partials/home.html',
         controller : 'homeController'
       }).
+      when('/login', {
+        templateUrl : 'partials/login.html',
+        controller : 'loginController'
+      }).
       otherwise({
-        redirectTo : '/home'
+        redirectTo : '/login'
       });
   }
 ]);
