@@ -6,12 +6,12 @@ fantasyControllers.controller('leagueController', ['$scope', '$http', '$routePar
 
     // when landing on the page, get all teams and show them
     $http.get('/api/teams/' + $routeParams.leagueid)
-      .then(function(data) {
-        $scope.teams = data;
-        console.log(data);
+      .then(function(response) {
+        $scope.teams = response.data;
+        console.log(response.data);
       },
-      function(data) {
-        console.log('Error: ' + data);
+      function(response) {
+        console.log('Error: ' + response.data);
       });
 }]);
 
@@ -20,21 +20,26 @@ fantasyControllers.controller('homeController', ['$scope', '$http', '$location',
 
     // when landing on the page, get all teams and show them
     $http.get('/api/leagues')
-      .then(function(data) {
-        $scope.leagues = data;
-        console.log(data);
+      .then(function(response) {
+        $scope.leagues = response.data;
+        console.log(response.data);
       },
-      function(data) {
-        console.log('Error: ' + data);
+      function(response) {
+        console.log('Error: ' + response.data);
       });
 }]);
 
 fantasyControllers.controller('loginController', ['$scope', '$http', '$location', 
   function ($scope, $http, $location) {
+    $scope.loginResult = "";
     $scope.login = function(){
       $http.post('/api/login', JSON.stringify($scope.loginCredentials))
-        .then(function(data) {
-          
+        .then(function(response) {
+          if(response.data.loginResult === false){
+            $scope.loginResult = "Login Failed";
+          }else{
+            $location.path('/home/'); 
+          }
         },
         function(data) {
           console.log('Error: ' + data);

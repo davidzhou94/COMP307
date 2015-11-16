@@ -48,15 +48,16 @@ app.post('/api/login', function(req, res){
     var connection = mysql.createConnection(
         {
           host     : 'localhost',
-          user     : 'root',
-          password : '',
+          user     : 'testuser',
+          password : 'password',
           database : 'db',
         }
     );
     connection.connect();
-    var queryString = 'USE db; SELECT username, password FROM player WHERE username=\'' + 
+    var queryString = 'SELECT username, password FROM player WHERE username=\'' + 
         loginObj.username + '\';';
     console.log(queryString);
+    var loginResult = false;
     connection.query(queryString, function(err, rows, fields) {
         if (err){
             console.log("Query error:" + err);
@@ -64,9 +65,14 @@ app.post('/api/login', function(req, res){
     
         for (var i in rows) {
             console.log(rows[i].username + " " + rows[i].password);
+            if(rows[i].password === loginObj.password){
+                loginResult = true;   
+            }
         }
+        console.log("Sending loginResult = " + loginResult);
+        res.json({loginResult : loginResult});
     });
-    
+
    connection.end();
 });
 app.get('*', function(req, res) {
