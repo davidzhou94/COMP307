@@ -1,6 +1,10 @@
 # created a database named 'db', and 'testuser' with password 'password'.
 # links for reference/replication: https://www.linode.com/docs/databases/mysql/how-to-install-mysql-on-ubuntu-14-04
 USE db;
+
+DROP TABLE IF EXISTS
+player, f_league, f_team, managed_actor, managed_action, actor, action, managed_rule, drafted_rule;
+
 CREATE TABLE player
 (
 	pid 				INTEGER 		AUTO_INCREMENT PRIMARY KEY,
@@ -61,5 +65,6 @@ CREATE TABLE drafted_rule
 	actor_id 			INTEGER		REFERENCES actor(actor_id),
 	action_id 			INTEGER		REFERENCES action(action_id),
 	fulfilled 			INTEGER		,
-	managed_rule_id 	INTEGER		REFERENCES managed_rule(m_rid)
+	managed_rule_id 	INTEGER		REFERENCES managed_rule(m_rid),
+  f_team_id       INTEGER   REFERENCES f_team(tid)
 );
