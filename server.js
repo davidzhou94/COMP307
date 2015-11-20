@@ -7,6 +7,23 @@ var methodOverride = require('method-override'); // simulate DELETE and PUT (exp
 var path = require('path');
 var mysql = require('mysql');
 
+var pool  = mysql.createPool({
+  connectionLimit : 100,
+  host     : 'localhost',
+  user     : 'testuser',
+  password : 'password',
+  database : 'db'
+});
+
+var getConnection = function(callback) {
+  pool.getConnection(function(err, connection) {
+    if (err){
+      console.log("Connection error: " + err);
+    }
+    callback(err, connection);
+  });
+};
+
 app.use(express.static(__dirname + '/public'));                 // set the static files location /public/img will be /img for users
 app.use(morgan('dev'));                                         // log every request to the console
 app.use(bodyParser.urlencoded({'extended':'true'}));            // parse application/x-www-form-urlencoded
@@ -16,65 +33,95 @@ app.use(methodOverride());
 
 app.get('/api/teams/:league', function(req, res) {
   // hardcoded list of teams for now
-  var gameid = req.params.league;
-  if (gameid == 1) {
-    res.json(
-    [
-      {id : 1, text : "Team Mr. Poopybutthole"},
-      {id : 2, text : "Team Mr. Meeseeks"}
-    ]);
-  } else {
-    res.json(
-    [
-      {id : 1, text : "Team Morty"},
-      {id : 2, text : "Team Rick"},
-      {id : 3, text : "Team Summer"},
-      {id : 4, text : "Team Beth"},
-      {id : 5, text : "Team Jerry AKA Why do I have to be last!?!"}
-    ]);
-  }
-});
-
-app.get('/api/leagues', function(req, res) {
-  // hardcoded list of leagues for now
-  res.json(
-  [
-    {id : 1, text : "League 1"},
-    {id : 2, text : "League 2"}
-  ]);
-});
-app.post('/api/login', function(req, res){
-    loginObj = req.body;
-    var connection = mysql.createConnection(
-        {
-          host     : 'localhost',
-          user     : 'testuser',
-          password : 'password',
-          database : 'db',
-        }
-    );
-    connection.connect();
-    var queryString = 'SELECT username, password FROM player WHERE username=\'' + 
-        loginObj.username + '\';';
-    console.log(queryString);
-    var loginResult = false;
+  var leagueid = req.params.league;
+  var queryString = 'SELECT t.tid, t.team_name, p.username ' +
+                    '  FROM f_team AS t' + 
+                    '  LEFT JOIN player AS p' +
+                    '    ON t.player_id = p.pid' +
+                    ' WHERE t.lid=\'' + leagueid + '\';';
+  console.log(queryString);
+  getConnection(function(err, connection) {
     connection.query(queryString, function(err, rows, fields) {
-        if (err){
-            console.log("Query error:" + err);
-        }
-    
-        for (var i in rows) {
-            console.log(rows[i].username + " " + rows[i].password);
-            if(rows[i].password === loginObj.password){
-                loginResult = true;   
-            }
-        }
-        console.log("Sending loginResult = " + loginResult);
-        res.json({loginResult : loginResult});
+      if (err){
+        console.log("Query error: " + err);
+      }
+      console.log("Sending " + rows);
+      res.json(rows);
     });
 
-   connection.end();
+    connection.release();
+  });
 });
+
+app.get('/api/leagues/:player', function(req, res) {
+  var playerid = req.params.player;
+  var queryString = 'SELECT l.lid, l.description, t.tid, t.team_name ' +
+                    '  FROM f_team AS t' + 
+                    '  LEFT JOIN f_league AS l' +
+                    '    ON t.lid = l.lid' +
+                    ' WHERE t.player_id=\'' + playerid + '\';';
+  console.log(queryString);
+  getConnection(function(err, connection) {
+    connection.query(queryString, function(err, rows, fields) {
+      if (err){
+        console.log("Query error: " + err);
+      }
+      console.log("Sending " + rows);
+      res.json(rows);
+    });
+
+    connection.release();
+  });
+});
+
+app.post('/api/login', function(req, res){
+  loginObj = req.body;
+  var queryString = 'SELECT pid, username' +
+                    '  FROM player ' + 
+                    ' WHERE username=\'' + loginObj.username + '\'' +
+                    '   AND password=\'' + loginObj.password + '\';';
+  console.log(queryString);
+  getConnection(function(err, connection) {
+    var loginResult = false;
+    connection.query(queryString, function(err, rows, fields) {
+      if (err){
+        console.log("Query error: " + err);
+      }
+      if(rows.length > 0){
+        console.log("Sending loginResult = " + rows[0]);
+        res.json(rows[0]);
+      } else {
+        res.json({pid : -1});
+      }
+    });
+
+    connection.release();
+  });
+});
+
+app.get('/api/drafts/:team', function(req, res) {
+  var teamid = req.params.team;
+  var queryString = 'SELECT d.participated_id, d.fulfilled, ar.description AS actor, an.description AS action, an.points' +
+                    '  FROM drafted_rule AS d' + 
+                    '  LEFT JOIN actor AS ar' +
+                    '    ON d.actor_id = ar.actor_id' +
+                    '  LEFT JOIN action AS an' +
+                    '    ON d.action_id = an.action_id' +
+                    ' WHERE d.f_team_id=\'' + teamid + '\';';
+  console.log(queryString);
+  getConnection(function(err, connection) {
+    connection.query(queryString, function(err, rows, fields) {
+      if (err){
+        console.log("Query error: " + err);
+      }
+      console.log("Sending " + rows);
+      res.json(rows);
+    });
+
+    connection.release();
+  });
+});
+
 app.get('*', function(req, res) {
   // load the single view file (angular will handle the page changes on the front-end)
   res.sendFile(path.join(__dirname, './public', 'index.html'));

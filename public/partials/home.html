@@ -2,21 +2,32 @@
 
   <!-- HEADER AND LEAGUE COUNT -->
   <div class="jumbotron text-center">
-    <h1>Here are leagues: <span ng-cloak class="label label-info">{{ leagues.length }}</span></h1>
+    <h1>You are participating in <span ng-cloak class="label label-info">{{ leagues.length }}</span> fantasy leagues. </h1>
   </div>
       
       
   <!-- LEAGUE LIST -->
   <div id="league-list" class="row">
     <div class="col-sm-4 col-sm-offset-4">
-      <!-- LOOP OVER THE LEAGUES IN $scope.leagues -->
-      <div ng-cloak ng-repeat="league in leagues">
-        {{ league.text }}
-        <a href="#/league/{{league.id}}">
-          <button type="button" class="btn btn-default">View</button>
-        </a>
-      </div>
-
+      <table class="table table-bordered table-hover">
+        <thead>
+          <tr>
+            <th>League Name</th>
+            <th>Your Team</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- LOOP OVER THE LEAGUES IN $scope.leagues -->
+          <tr ng-cloak ng-repeat="league in leagues">
+            <td>
+              <a href="#/league/{{league.lid}}">{{ league.description }}</a>
+            </td>
+            <td>
+              <a href="#/team/{{league.tid}}">{{ league.team_name }}</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
   

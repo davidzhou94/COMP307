@@ -1,0 +1,42 @@
+<div class="container">
+
+  <!-- HEADER AND TEAM COUNT -->
+  <div class="jumbotron text-center">
+    <h1>There are <span ng-cloak class="label label-info">{{ drafts.length }}</span> drafts on this team. </h1>
+  </div>
+  
+  <!-- TEAM LIST -->
+  <div id="team-list" class="row">
+    <div class="col-sm-4 col-sm-offset-4">
+
+      <table class="table table-bordered table-hover">
+        <thead>
+          <tr>
+            <th>Actor</th>
+            <th>Action</th>
+            <th>Fulfilled Count</th>
+            <th>Points</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- LOOP OVER THE DRAFTS IN $scope.drafts -->
+          <tr ng-cloak ng-repeat="draft in drafts">
+            <td>
+              {{ draft.actor }}</a>
+            </td>
+            <td>
+              {{ draft.action }}
+            </td>
+            <td>
+              {{ draft.fulfilled }}
+            </td>
+            <td>
+              {{ draft.points }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+</div>

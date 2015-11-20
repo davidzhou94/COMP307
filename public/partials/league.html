@@ -2,7 +2,7 @@
 
   <!-- HEADER AND TEAM COUNT -->
   <div class="jumbotron text-center">
-    <h1>Here are teams: <span ng-cloak class="label label-info">{{ teams.length }}</span></h1>
+    <h1>There are <span ng-cloak class="label label-info">{{ teams.length }}</span> teams in this league. </h1>
   </div>
       
       
@@ -10,11 +10,25 @@
   <div id="team-list" class="row">
     <div class="col-sm-4 col-sm-offset-4">
 
-      <!-- LOOP OVER THE TEAMS IN $scope.teams -->
-      <div ng-cloak ng-repeat="team in teams">
-        {{ team.text }}
-      </div>
-
+      <table class="table table-bordered table-hover">
+        <thead>
+          <tr>
+            <th>Team Name</th>
+            <th>Owner</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- LOOP OVER THE TEAMS IN $scope.teams -->
+          <tr ng-cloak ng-repeat="team in teams">
+            <td>
+              <a href="#/team/{{team.tid}}">{{ team.team_name }}</a>
+            </td>
+            <td>
+              {{ team.username }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
   
