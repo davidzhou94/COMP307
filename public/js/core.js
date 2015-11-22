@@ -21,7 +21,6 @@ fantasyControllers.controller('leagueController', ['$scope', '$http', '$routePar
     $http.get('/api/teams/' + $routeParams.leagueid)
       .then(function(response) {
         $scope.teams = response.data;
-        console.log(response.data);
       },
       function(response) {
         console.log('Error: ' + response.data);
@@ -34,7 +33,6 @@ fantasyControllers.controller('homeController', ['$scope', '$http', '$routeParam
     $http.get('/api/leagues/' + $routeParams.playerid)
       .then(function(response) {
         $scope.leagues = response.data;
-        console.log(response.data);
       },
       function(response) {
         console.log('Error: ' + response.data);
@@ -70,7 +68,6 @@ fantasyControllers.controller('teamController', ['$scope', '$http', '$routeParam
     $http.get('/api/drafts/' + $routeParams.teamid)
       .then(function(response) {
         $scope.selectedDrafts = response.data;
-        console.log(response.data);
       },
       function(response) {
         console.log('Error: ' + response.data);
@@ -81,7 +78,6 @@ fantasyControllers.controller('teamController', ['$scope', '$http', '$routeParam
         $http.get('/api/availablepicks/' + $routeParams.teamid)
           .then(function(response) {
             $scope.availableDrafts = response.data;
-            console.log(response.data);
           },
           function(response) {
             console.log('Error: ' + response.data);
@@ -105,7 +101,6 @@ fantasyControllers.controller('teamController', ['$scope', '$http', '$routeParam
                   $scope.selectedDrafts.push($scope.availableDrafts[i]);
                   $scope.availableDrafts.splice(i, 1);
                 }
-
                 i -= 1;
               }
             } else {

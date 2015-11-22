@@ -7,6 +7,13 @@ var methodOverride = require('method-override'); // simulate DELETE and PUT (exp
 var path = require('path');
 var mysql = require('mysql');
 
+app.use(express.static(__dirname + '/public'));                 // set the static files location /public/img will be /img for users
+app.use(morgan('dev'));                                         // log every request to the console
+app.use(bodyParser.urlencoded({'extended':'true'}));            // parse application/x-www-form-urlencoded
+app.use(bodyParser.json());                                     // parse application/json
+app.use(bodyParser.json({ type: 'application/vnd.api+json' })); // parse application/vnd.api+json as json
+app.use(methodOverride());
+
 var pool  = mysql.createPool({
   connectionLimit : 100,
   host     : 'localhost',
@@ -18,18 +25,25 @@ var pool  = mysql.createPool({
 var getConnection = function(callback) {
   pool.getConnection(function(err, connection) {
     if (err){
-      console.log("Connection error: " + err);
+      console.log("[CRITICAL] Connection error: " + err);
+    } else {
+      callback(connection);
     }
-    callback(err, connection);
   });
 };
 
-app.use(express.static(__dirname + '/public'));                 // set the static files location /public/img will be /img for users
-app.use(morgan('dev'));                                         // log every request to the console
-app.use(bodyParser.urlencoded({'extended':'true'}));            // parse application/x-www-form-urlencoded
-app.use(bodyParser.json());                                     // parse application/json
-app.use(bodyParser.json({ type: 'application/vnd.api+json' })); // parse application/vnd.api+json as json
-app.use(methodOverride());
+var simpleQuery = function(queryString, res) {
+  getConnection(function(connection) {
+    connection.query(queryString, function(err, result, fields) {
+      if (err) {
+        console.log("[CRITICAL] Query error: " + err);
+      }
+      res.json(result);
+    });
+
+    connection.release();
+  });
+}
 
 app.get('/api/teams/:league', function(req, res) {
   // hardcoded list of teams for now
@@ -40,18 +54,7 @@ app.get('/api/teams/:league', function(req, res) {
     '  LEFT JOIN player AS p' +
     '    ON t.player_id = p.pid' +
     ' WHERE t.lid= ' + leagueid + ';';
-  console.log(queryString);
-  getConnection(function(err, connection) {
-    connection.query(queryString, function(err, rows, fields) {
-      if (err){
-        console.log("Query error: " + err);
-      }
-      console.log("Sending " + rows);
-      res.json(rows);
-    });
-
-    connection.release();
-  });
+  simpleQuery(queryString, res);
 });
 
 app.get('/api/leagues/:player', function(req, res) {
@@ -66,18 +69,7 @@ app.get('/api/leagues/:player', function(req, res) {
     '  LEFT JOIN f_league' +
     '    ON v_f_team.lid = f_league.lid' +
     ' WHERE v_f_team.player_id = ' + playerid + ';';
-  console.log(queryString);
-  getConnection(function(err, connection) {
-    connection.query(queryString, function(err, rows, fields) {
-      if (err){
-        console.log("Query error: " + err);
-      }
-      console.log("Sending " + rows);
-      res.json(rows);
-    });
-
-    connection.release();
-  });
+  simpleQuery(queryString, res);
 });
 
 app.post('/api/login', function(req, res){
@@ -87,14 +79,13 @@ app.post('/api/login', function(req, res){
                     ' WHERE username=\'' + loginObj.username + '\'' +
                     '   AND password=\'' + loginObj.password + '\';';
   console.log(queryString);
-  getConnection(function(err, connection) {
+  getConnection(function(connection) {
     var loginResult = false;
     connection.query(queryString, function(err, rows, fields) {
       if (err){
         console.log("Query error: " + err);
       }
       if(rows.length > 0){
-        console.log("Sending loginResult = " + rows[0]);
         res.json(rows[0]);
       } else {
         res.json({pid : -1});
@@ -107,86 +98,56 @@ app.post('/api/login', function(req, res){
 
 app.get('/api/drafts/:team', function(req, res) {
   var teamid = req.params.team;
-  var queryString = 'SELECT d.participated_id, ' +
-                    '       d.fulfilled, ' +
-                    '       ar.description AS actor, ' +
-                    '       ar.actor_id, ' +
-                    '       an.description AS action, ' +
-                    '       an.action_id, ' +
-                    '       an.points' +
-                    '  FROM drafted_rule AS d' + 
-                    '  LEFT JOIN actor AS ar' +
-                    '    ON d.actor_id = ar.actor_id' +
-                    '  LEFT JOIN action AS an' +
-                    '    ON d.action_id = an.action_id' +
-                    ' WHERE d.f_team_id = ' + teamid +
-                    ' ORDER BY d.participated_id;';
-  console.log(queryString);
-  getConnection(function(err, connection) {
-    connection.query(queryString, function(err, rows, fields) {
-      if (err){
-        console.log("Query error: " + err);
-      }
-      console.log("Sending " + rows);
-      res.json(rows);
-    });
-
-    connection.release();
-  });
+  var queryString = 
+    'SELECT d.participated_id, ' +
+    '       d.fulfilled, ' +
+    '       ar.description AS actor, ' +
+    '       ar.actor_id, ' +
+    '       an.description AS action, ' +
+    '       an.action_id, ' +
+    '       an.points' +
+    '  FROM drafted_rule AS d' + 
+    '  LEFT JOIN actor AS ar' +
+    '    ON d.actor_id = ar.actor_id' +
+    '  LEFT JOIN action AS an' +
+    '    ON d.action_id = an.action_id' +
+    ' WHERE d.f_team_id = ' + teamid +
+    ' ORDER BY d.participated_id;';
+  simpleQuery(queryString, res);
 });
 
 app.get('/api/availablepicks/:team', function(req, res) {
   var teamid = req.params.team;
-  var queryString = 'SELECT ar.description AS actor, ' +
-                    '       ar.actor_id, ' +
-                    '       an.description AS action, ' +
-                    '       an.action_id, ' +
-                    '       an.points' +
-                    '  FROM actor AS ar' +
-                    '  JOIN action AS an' +
-                    '    ON ar.f_league_id = an.f_league_id' +
-                    '  LEFT JOIN drafted_rule AS d' +
-                    '    ON d.actor_id = ar.actor_id AND' +
-                    '       d.action_id = an.action_id' +
-                    '  LEFT JOIN f_team AS t' +
-                    '    ON t.lid = ar.f_league_id' +
-                    ' WHERE ar.f_league_id = t.lid AND' +
-                    '       an.f_league_id = t.lid AND' +
-                    '       t.tid = ' + teamid + ' AND' +
-                    '       d.participated_id IS NULL' +
-                    ' ORDER BY ar.actor_id;';
-  console.log(queryString);
-  getConnection(function(err, connection) {
-    connection.query(queryString, function(err, rows, fields) {
-      if (err){
-        console.log("Query error: " + err);
-      }
-      console.log("Sending " + rows);
-      res.json(rows);
-    });
-
-    connection.release();
-  });
+  var queryString = 
+    'SELECT ar.description AS actor, ' +
+    '       ar.actor_id, ' +
+    '       an.description AS action, ' +
+    '       an.action_id, ' +
+    '       an.points' +
+    '  FROM actor AS ar' +
+    '  JOIN action AS an' +
+    '    ON ar.f_league_id = an.f_league_id' +
+    '  LEFT JOIN drafted_rule AS d' +
+    '    ON d.actor_id = ar.actor_id AND' +
+    '       d.action_id = an.action_id' +
+    '  LEFT JOIN f_team AS t' +
+    '    ON t.lid = ar.f_league_id' +
+    ' WHERE ar.f_league_id = t.lid AND' +
+    '       an.f_league_id = t.lid AND' +
+    '       t.tid = ' + teamid + ' AND' +
+    '       d.participated_id IS NULL' +
+    ' ORDER BY ar.actor_id;';
+  simpleQuery(queryString, res);
 });
 
 app.get('/api/draftsbyactor/:actor', function(req, res) {
   var actorid = req.params.actor;
-  var queryString = 'SELECT *' +
-                    '  FROM drafted_rule AS d' +
-                    ' WHERE d.actor_id = ' + actorid +
-                    ' LIMIT 1;';
-  console.log(queryString);
-  getConnection(function(err, connection) {
-    connection.query(queryString, function(err, rows, fields) {
-      if (err){
-        console.log("Query error: " + err);
-      }
-      console.log("Sending " + rows);
-      res.json(rows);
-    });
-
-    connection.release();
-  });
+  var queryString = 
+    'SELECT *' +
+    '  FROM drafted_rule AS d' +
+    ' WHERE d.actor_id = ' + actorid +
+    ' LIMIT 1;';
+  simpleQuery(queryString, res);
 });
 
 app.post('/api/draftpick', function(req, res){
@@ -212,19 +173,7 @@ app.post('/api/draftpick', function(req, res){
       'INSERT INTO drafted_rule(action_id, actor_id, fulfilled, f_team_id)' +
       'VALUES (' + obj.action + ', ' + obj.actor + ', 0, ' + obj.team + ');';
   }
-  console.log(queryString);
-  getConnection(function(err, connection) {
-    var loginResult = false;
-    connection.query(queryString, function(err, rows, fields) {
-      if (err){
-        console.log("Query error: " + err);
-      }
-      console.log("Sending " + rows);
-      res.json(rows);
-    });
-
-    connection.release();
-  });
+  simpleQuery(queryString, res);
 });
 
 app.get('*', function(req, res) {
