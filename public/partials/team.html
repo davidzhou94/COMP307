@@ -2,7 +2,7 @@
 
   <!-- HEADER AND TEAM COUNT -->
   <div class="jumbotron text-center">
-    <h1>There are <span ng-cloak class="label label-info">{{ drafts.length }}</span> drafts on this team. </h1>
+    <h1>There are <span ng-cloak class="label label-info">{{ selectedDrafts.length }}</span> drafts on this team. </h1>
   </div>
   
   <table class="table table-bordered table-hover">
@@ -15,28 +15,29 @@
       </tr>
     </thead>
     <tbody>
-      <!-- LOOP OVER THE DRAFTS IN $scope.drafts -->
-      <tr ng-cloak ng-repeat="draft in drafts">
+      <!-- LOOP OVER THE DRAFTS IN $scope.selectedDrafts -->
+      <tr ng-cloak ng-repeat="sdraft in selectedDrafts">
         <td>
-          {{ draft.actor }}
+          {{ sdraft.actor }}
         </td>
         <td>
-          {{ draft.action }}
+          {{ sdraft.action }}
         </td>
         <td>
-          {{ draft.fulfilled }}
+          {{ sdraft.fulfilled }}
         </td>
         <td>
-          {{ draft.points }}
+          {{ sdraft.points }}
         </td>
       </tr>
     </tbody>
   </table>
   
-  <div ng-init="showDrafts=false" ng-controller="draftController">
+  <div ng-init="showDrafts=false">
     <a href="" ng-click="showDrafts=!showDrafts; load(showDrafts);">
       <button type="button" class="btn btn-default">Draft new picks</button>
     </a>
+    <br />
     <div ng-show="showDrafts">
       <table class="table table-bordered table-hover">
         <thead>
@@ -48,8 +49,8 @@
           </tr>
         </thead>
         <tbody>
-          <!-- LOOP OVER THE AVAILABLE DRAFTS IN $scope.availabledrafts -->
-          <tr ng-cloak ng-repeat="adraft in availabledrafts">
+          <!-- LOOP OVER THE AVAILABLE DRAFTS IN $scope.availableDrafts -->
+          <tr ng-cloak ng-repeat="adraft in availableDrafts">
             <td>
               {{ adraft.actor }}
             </td>

@@ -12,6 +12,7 @@
       <tr>
         <th>Team Name</th>
         <th>Owner</th>
+        <th>Standing</th>
       </tr>
     </thead>
     <tbody>
@@ -22,6 +23,9 @@
         </td>
         <td>
           {{ team.username }}
+        </td>
+        <td>
+          {{ team.total_points || 0 }}
         </td>
       </tr>
     </tbody>

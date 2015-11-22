@@ -4,6 +4,8 @@ USE db;
 
 DROP TABLE IF EXISTS
 player, f_league, f_team, managed_actor, managed_action, actor, action, managed_rule, drafted_rule;
+DROP VIEW IF EXISTS
+v_f_team;
 
 CREATE TABLE player
 (
@@ -62,9 +64,22 @@ CREATE TABLE managed_rule
 CREATE TABLE drafted_rule
 (
 	participated_id		INTEGER		AUTO_INCREMENT PRIMARY KEY,
-	actor_id 			INTEGER		REFERENCES actor(actor_id),
-	action_id 			INTEGER		REFERENCES action(action_id),
+	actor_id 			    INTEGER		NOT NULL REFERENCES actor(actor_id),
+	action_id 			  INTEGER		NOT NULL REFERENCES action(action_id),
 	fulfilled 			INTEGER		,
 	managed_rule_id 	INTEGER		REFERENCES managed_rule(m_rid),
-  f_team_id       INTEGER   REFERENCES f_team(tid)
+  f_team_id       INTEGER   REFERENCES f_team(tid),
+  UNIQUE (actor_id, action_id)
 );
+CREATE VIEW v_f_team AS
+SELECT f_team.tid,
+       f_team.team_name,
+       f_team.player_id,
+       f_team.lid,
+       SUM(drafted_rule.fulfilled * action.points) AS total_points
+  FROM f_team
+  LEFT JOIN drafted_rule
+    ON f_team.tid = drafted_rule.f_team_id
+  LEFT JOIN action
+    ON drafted_rule.action_id = action.action_id
+ GROUP BY f_team.tid;

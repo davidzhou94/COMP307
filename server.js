@@ -34,11 +34,12 @@ app.use(methodOverride());
 app.get('/api/teams/:league', function(req, res) {
   // hardcoded list of teams for now
   var leagueid = req.params.league;
-  var queryString = 'SELECT t.tid, t.team_name, p.username ' +
-                    '  FROM f_team AS t' + 
-                    '  LEFT JOIN player AS p' +
-                    '    ON t.player_id = p.pid' +
-                    ' WHERE t.lid=\'' + leagueid + '\';';
+  var queryString = 
+    'SELECT t.tid, t.team_name, p.username, t.total_points ' +
+    '  FROM v_f_team AS t' + 
+    '  LEFT JOIN player AS p' +
+    '    ON t.player_id = p.pid' +
+    ' WHERE t.lid= ' + leagueid + ';';
   console.log(queryString);
   getConnection(function(err, connection) {
     connection.query(queryString, function(err, rows, fields) {
@@ -55,11 +56,16 @@ app.get('/api/teams/:league', function(req, res) {
 
 app.get('/api/leagues/:player', function(req, res) {
   var playerid = req.params.player;
-  var queryString = 'SELECT l.lid, l.description, t.tid, t.team_name ' +
-                    '  FROM f_team AS t' + 
-                    '  LEFT JOIN f_league AS l' +
-                    '    ON t.lid = l.lid' +
-                    ' WHERE t.player_id=\'' + playerid + '\';';
+  var queryString = 
+    'SELECT f_league.lid,' +
+    '       f_league.description,' +
+    '       v_f_team.tid,' +
+    '       v_f_team.team_name,' +
+    '       v_f_team.total_points' +
+    '  FROM v_f_team' + 
+    '  LEFT JOIN f_league' +
+    '    ON v_f_team.lid = f_league.lid' +
+    ' WHERE v_f_team.player_id = ' + playerid + ';';
   console.log(queryString);
   getConnection(function(err, connection) {
     connection.query(queryString, function(err, rows, fields) {
@@ -111,11 +117,9 @@ app.get('/api/drafts/:team', function(req, res) {
                     '  FROM drafted_rule AS d' + 
                     '  LEFT JOIN actor AS ar' +
                     '    ON d.actor_id = ar.actor_id' +
-                    '  JOIN action AS an' +
-                    '    ON d.action_id = an.action_id OR' +
-                    '       d.action_id IS NULL' +
-                    ' WHERE d.f_team_id=\'' + teamid + '\' AND' +
-                    '       ar.f_league_id = an.f_league_id' +
+                    '  LEFT JOIN action AS an' +
+                    '    ON d.action_id = an.action_id' +
+                    ' WHERE d.f_team_id = ' + teamid +
                     ' ORDER BY d.participated_id;';
   console.log(queryString);
   getConnection(function(err, connection) {
@@ -140,10 +144,10 @@ app.get('/api/availablepicks/:team', function(req, res) {
                     '       an.points' +
                     '  FROM actor AS ar' +
                     '  JOIN action AS an' +
+                    '    ON ar.f_league_id = an.f_league_id' +
                     '  LEFT JOIN drafted_rule AS d' +
                     '    ON d.actor_id = ar.actor_id AND' +
-                    '       ( d.action_id = an.action_id OR' +
-                    '         d.action_id IS NULL)' +
+                    '       d.action_id = an.action_id' +
                     '  LEFT JOIN f_team AS t' +
                     '    ON t.lid = ar.f_league_id' +
                     ' WHERE ar.f_league_id = t.lid AND' +
@@ -165,10 +169,49 @@ app.get('/api/availablepicks/:team', function(req, res) {
   });
 });
 
+app.get('/api/draftsbyactor/:actor', function(req, res) {
+  var actorid = req.params.actor;
+  var queryString = 'SELECT *' +
+                    '  FROM drafted_rule AS d' +
+                    ' WHERE d.actor_id = ' + actorid +
+                    ' LIMIT 1;';
+  console.log(queryString);
+  getConnection(function(err, connection) {
+    connection.query(queryString, function(err, rows, fields) {
+      if (err){
+        console.log("Query error: " + err);
+      }
+      console.log("Sending " + rows);
+      res.json(rows);
+    });
+
+    connection.release();
+  });
+});
+
 app.post('/api/draftpick', function(req, res){
   var obj = req.body;
-  var queryString = 'INSERT INTO drafted_rule(action_id, actor_id, fulfilled, f_team_id)' +
-                    'VALUES (' + obj.action + ', ' + obj.actor + ', 0, ' + obj.team + ')'
+  var queryString = ""
+  if (obj.action === null) {
+    queryString = 
+      'INSERT INTO drafted_rule(action_id, actor_id, fulfilled, f_team_id)' +
+      '   SELECT action.action_id,' +
+      '   actor.actor_id,' +
+      '   0 AS fulfilled,' +
+      obj.team + ' AS f_team_id' +
+      '     FROM actor' +
+      '     JOIN action' +
+      '       ON action.f_league_id = actor.f_league_id' +
+      '     LEFT JOIN drafted_rule' +
+      '       ON drafted_rule.actor_id = actor.actor_id AND' +
+      '          drafted_rule.action_id = action.action_id' +
+      '    WHERE drafted_rule.participated_id IS NULL AND' +
+      '          actor.actor_id = ' + obj.actor + ';';
+  } else {
+    queryString = 
+      'INSERT INTO drafted_rule(action_id, actor_id, fulfilled, f_team_id)' +
+      'VALUES (' + obj.action + ', ' + obj.actor + ', 0, ' + obj.team + ');';
+  }
   console.log(queryString);
   getConnection(function(err, connection) {
     var loginResult = false;

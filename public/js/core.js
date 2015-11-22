@@ -63,13 +63,13 @@ fantasyControllers.controller('loginController', ['$scope', '$http', '$location'
 
 fantasyControllers.controller('teamController', ['$scope', '$http', '$routeParams', 
   function ($scope, $http, $routeParams) {
-    $scope.drafts = [];
-    $scope.availabledrafts = [];
+    $scope.selectedDrafts = [];
+    $scope.availableDrafts = [];
     // when landing on the page, get all drafts for the given team and show them
 
     $http.get('/api/drafts/' + $routeParams.teamid)
       .then(function(response) {
-        $scope.drafts = response.data;
+        $scope.selectedDrafts = response.data;
         console.log(response.data);
       },
       function(response) {
@@ -80,7 +80,7 @@ fantasyControllers.controller('teamController', ['$scope', '$http', '$routeParam
       if (show) {
         $http.get('/api/availablepicks/' + $routeParams.teamid)
           .then(function(response) {
-            $scope.availabledrafts = response.data;
+            $scope.availableDrafts = response.data;
             console.log(response.data);
           },
           function(response) {
@@ -88,6 +88,7 @@ fantasyControllers.controller('teamController', ['$scope', '$http', '$routeParam
           });
       }
     }
+    
     $scope.draftpick = function(action, actor, index) {
       $http.post('/api/draftpick', JSON.stringify({
           action : action, 
@@ -97,20 +98,20 @@ fantasyControllers.controller('teamController', ['$scope', '$http', '$routeParam
         .then(function(response) {
           if (response.data.affectedRows > 0) {
             if (action === null) {
-              i = $scope.availabledrafts.length - 1;
+              i = $scope.availableDrafts.length - 1;
               while (i >= 0) {
-                if ($scope.availabledrafts[i].actor_id === actor) {
-                  $scope.availabledrafts[i].fulfilled = 0;
-                  $scope.drafts.push($scope.availabledrafts[i]);
-                  $scope.availabledrafts.splice(i, 1);
+                if ($scope.availableDrafts[i].actor_id === actor) {
+                  $scope.availableDrafts[i].fulfilled = 0;
+                  $scope.selectedDrafts.push($scope.availableDrafts[i]);
+                  $scope.availableDrafts.splice(i, 1);
                 }
 
                 i -= 1;
               }
             } else {
-              $scope.availabledrafts[index].fulfilled = 0;
-              $scope.drafts.push($scope.availabledrafts[index]);
-              $scope.availabledrafts.splice(index, 1);
+              $scope.availableDrafts[index].fulfilled = 0;
+              $scope.selectedDrafts.push($scope.availableDrafts[index]);
+              $scope.availableDrafts.splice(index, 1);
             }
           }
         },
@@ -118,12 +119,6 @@ fantasyControllers.controller('teamController', ['$scope', '$http', '$routeParam
           console.log('Error: ' + data);
         });
     }
-}]);
-
-fantasyControllers.controller('draftController', ['$scope', '$http', '$routeParams', 
-  function ($scope, $http, $routeParams) {
-    // when landing on the page, get all drafts for the given team and show them
-
 }]);
 
 var fantasyApp = angular.module('fantasyApp', [

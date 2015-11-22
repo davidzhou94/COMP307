@@ -77,5 +77,5 @@ VALUES
 
 INSERT INTO drafted_rule (participated_id, actor_id, action_id, fulfilled, f_team_id)
 VALUES
-(1, 1, NULL, 0, 1),
-(2, 2, NULL, 0, 1);
+(1, 1, 1, 0, 1),
+(2, 2, 1, 0, 1);
