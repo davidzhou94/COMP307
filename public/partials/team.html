@@ -12,6 +12,7 @@
         <th>Action</th>
         <th>Fulfilled Count</th>
         <th>Points</th>
+        <th>Options</th>
       </tr>
     </thead>
     <tbody>
@@ -29,6 +30,14 @@
         <td>
           {{ sdraft.points }}
         </td>
+        <td>
+          <a href="" ng-click="removeDraftPick(null, sdraft.actor_id, $index);">
+            <button type="button" class="btn btn-default">Remove Actor</button>
+          </a>
+          <a href="" ng-click="removeDraftPick(sdraft.action_id, sdraft.actor_id, $index);">
+            <button type="button" class="btn btn-default">Remove Action</button>
+          </a>
+        </td>
       </tr>
     </tbody>
   </table>
@@ -45,7 +54,7 @@
             <th>Actor</th>
             <th>Action</th>
             <th>Points</th>
-            <th>Draft</th>
+            <th>Options</th>
           </tr>
         </thead>
         <tbody>
@@ -61,10 +70,10 @@
               {{ adraft.points }}
             </td>
             <td>
-              <a href="" ng-click="draftpick(null, adraft.actor_id, $index);">
+              <a href="" ng-click="addDraftPick(null, adraft.actor_id, $index);">
                 <button type="button" class="btn btn-default">Draft Actor</button>
               </a>
-              <a href="" ng-click="draftpick(adraft.action_id, adraft.actor_id, $index);">
+              <a href="" ng-click="addDraftPick(adraft.action_id, adraft.actor_id, $index);">
                 <button type="button" class="btn btn-default">Draft Action</button>
               </a>
             </td>

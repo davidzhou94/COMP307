@@ -85,8 +85,8 @@ fantasyControllers.controller('teamController', ['$scope', '$http', '$routeParam
       }
     }
     
-    $scope.draftpick = function(action, actor, index) {
-      $http.post('/api/draftpick', JSON.stringify({
+    $scope.addDraftPick = function(action, actor, index) {
+      $http.post('/api/addDraftedRule', JSON.stringify({
           action : action, 
           actor : actor, 
           team : $routeParams.teamid
@@ -107,6 +107,34 @@ fantasyControllers.controller('teamController', ['$scope', '$http', '$routeParam
               $scope.availableDrafts[index].fulfilled = 0;
               $scope.selectedDrafts.push($scope.availableDrafts[index]);
               $scope.availableDrafts.splice(index, 1);
+            }
+          }
+        },
+        function(data) {
+          console.log('Error: ' + data);
+        });
+    }
+    
+    $scope.removeDraftPick = function(action, actor, index) {
+      $http.post('/api/removeDraftedRule', JSON.stringify({
+          action : action, 
+          actor : actor, 
+          team : $routeParams.teamid
+        }))
+        .then(function(response) {
+          if (response.data.affectedRows > 0) {
+            if (action === null) {
+              i = $scope.selectedDrafts.length - 1;
+              while (i >= 0) {
+                if ($scope.selectedDrafts[i].actor_id === actor) {
+                  $scope.availableDrafts.push($scope.selectedDrafts[i]);
+                  $scope.selectedDrafts.splice(i, 1);
+                }
+                i -= 1;
+              }
+            } else {
+              $scope.availableDrafts.push($scope.selectedDrafts[index]);
+              $scope.selectedDrafts.splice(index, 1);
             }
           }
         },

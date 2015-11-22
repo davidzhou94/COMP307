@@ -74,10 +74,11 @@ app.get('/api/leagues/:player', function(req, res) {
 
 app.post('/api/login', function(req, res){
   loginObj = req.body;
-  var queryString = 'SELECT pid, username' +
-                    '  FROM player ' + 
-                    ' WHERE username=\'' + loginObj.username + '\'' +
-                    '   AND password=\'' + loginObj.password + '\';';
+  var queryString = 
+    'SELECT pid, username' +
+    '  FROM player ' + 
+    ' WHERE username = \'' + loginObj.username + '\'' +
+    '   AND password = \'' + loginObj.password + '\';';
   console.log(queryString);
   getConnection(function(connection) {
     var loginResult = false;
@@ -150,7 +151,7 @@ app.get('/api/draftsbyactor/:actor', function(req, res) {
   simpleQuery(queryString, res);
 });
 
-app.post('/api/draftpick', function(req, res){
+app.post('/api/addDraftedRule', function(req, res){
   var obj = req.body;
   var queryString = ""
   if (obj.action === null) {
@@ -176,13 +177,32 @@ app.post('/api/draftpick', function(req, res){
   simpleQuery(queryString, res);
 });
 
+app.post('/api/removeDraftedRule', function(req, res){
+  var obj = req.body;
+  var queryString = ""
+  if (obj.action === null) {
+    queryString = 
+      'DELETE FROM drafted_rule' +
+      ' WHERE drafted_rule.actor_id = ' + obj.actor + ' AND' +
+      '       drafted_rule.f_team_id = ' + obj.team + ';';
+  } else {
+    queryString = 
+      'DELETE FROM drafted_rule' +
+      ' WHERE drafted_rule.actor_id = ' + obj.actor + ' AND' +
+      '       drafted_rule.action_id = ' + obj.action + ' AND' +
+      '       drafted_rule.f_team_id = ' + obj.team + 
+      ' LIMIT 1;';
+  }
+  simpleQuery(queryString, res);
+});
+
 app.get('*', function(req, res) {
   // load the single view file (angular will handle the page changes on the front-end)
   res.sendFile(path.join(__dirname, './public', 'index.html'));
 });
 
-var server = app.listen(8000, function(){
-    console.log('Server Started at port 8000');  
+var server = app.listen(80, function(){
+    console.log('Server Started at port 80');  
 });
 process.on('SIGTERM', function(){
     process.exit();
