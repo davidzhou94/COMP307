@@ -5,33 +5,67 @@
     <h1>There are <span ng-cloak class="label label-info">{{ drafts.length }}</span> drafts on this team. </h1>
   </div>
   
-  <!-- TEAM LIST -->
-  <div id="team-list" class="row">
-    <div class="col-sm-4 col-sm-offset-4">
-
+  <table class="table table-bordered table-hover">
+    <thead>
+      <tr>
+        <th>Actor</th>
+        <th>Action</th>
+        <th>Fulfilled Count</th>
+        <th>Points</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- LOOP OVER THE DRAFTS IN $scope.drafts -->
+      <tr ng-cloak ng-repeat="draft in drafts">
+        <td>
+          {{ draft.actor }}
+        </td>
+        <td>
+          {{ draft.action }}
+        </td>
+        <td>
+          {{ draft.fulfilled }}
+        </td>
+        <td>
+          {{ draft.points }}
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  
+  <div ng-init="showDrafts=false" ng-controller="draftController">
+    <a href="" ng-click="showDrafts=!showDrafts; load(showDrafts);">
+      <button type="button" class="btn btn-default">Draft new picks</button>
+    </a>
+    <div ng-show="showDrafts">
       <table class="table table-bordered table-hover">
         <thead>
           <tr>
             <th>Actor</th>
             <th>Action</th>
-            <th>Fulfilled Count</th>
             <th>Points</th>
+            <th>Draft</th>
           </tr>
         </thead>
         <tbody>
-          <!-- LOOP OVER THE DRAFTS IN $scope.drafts -->
-          <tr ng-cloak ng-repeat="draft in drafts">
+          <!-- LOOP OVER THE AVAILABLE DRAFTS IN $scope.availabledrafts -->
+          <tr ng-cloak ng-repeat="adraft in availabledrafts">
             <td>
-              {{ draft.actor }}</a>
+              {{ adraft.actor }}
             </td>
             <td>
-              {{ draft.action }}
+              {{ adraft.action }}
             </td>
             <td>
-              {{ draft.fulfilled }}
+              {{ adraft.points }}
             </td>
             <td>
-              {{ draft.points }}
+              <a href="" ng-click="draftpick(null, adraft.actor_id, $index);">
+                <button type="button" class="btn btn-default">Draft Actor</button>
+              </a>
+              <a href="" ng-click="draftpick(adraft.action_id, adraft.actor_id, $index);">
+                <button type="button" class="btn btn-default">Draft Action</button>
+              </a>
             </td>
           </tr>
         </tbody>

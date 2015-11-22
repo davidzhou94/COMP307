@@ -7,29 +7,24 @@
       
       
   <!-- TEAM LIST -->
-  <div id="team-list" class="row">
-    <div class="col-sm-4 col-sm-offset-4">
+  <table class="table table-bordered table-hover">
+    <thead>
+      <tr>
+        <th>Team Name</th>
+        <th>Owner</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- LOOP OVER THE TEAMS IN $scope.teams -->
+      <tr ng-cloak ng-repeat="team in teams">
+        <td>
+          <a href="#/team/{{team.tid}}">{{ team.team_name }}</a>
+        </td>
+        <td>
+          {{ team.username }}
+        </td>
+      </tr>
+    </tbody>
+  </table>
 
-      <table class="table table-bordered table-hover">
-        <thead>
-          <tr>
-            <th>Team Name</th>
-            <th>Owner</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- LOOP OVER THE TEAMS IN $scope.teams -->
-          <tr ng-cloak ng-repeat="team in teams">
-            <td>
-              <a href="#/team/{{team.tid}}">{{ team.team_name }}</a>
-            </td>
-            <td>
-              {{ team.username }}
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-  
 </div>

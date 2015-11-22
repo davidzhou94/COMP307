@@ -101,15 +101,77 @@ app.post('/api/login', function(req, res){
 
 app.get('/api/drafts/:team', function(req, res) {
   var teamid = req.params.team;
-  var queryString = 'SELECT d.participated_id, d.fulfilled, ar.description AS actor, an.description AS action, an.points' +
+  var queryString = 'SELECT d.participated_id, ' +
+                    '       d.fulfilled, ' +
+                    '       ar.description AS actor, ' +
+                    '       ar.actor_id, ' +
+                    '       an.description AS action, ' +
+                    '       an.action_id, ' +
+                    '       an.points' +
                     '  FROM drafted_rule AS d' + 
                     '  LEFT JOIN actor AS ar' +
                     '    ON d.actor_id = ar.actor_id' +
-                    '  LEFT JOIN action AS an' +
-                    '    ON d.action_id = an.action_id' +
-                    ' WHERE d.f_team_id=\'' + teamid + '\';';
+                    '  JOIN action AS an' +
+                    '    ON d.action_id = an.action_id OR' +
+                    '       d.action_id IS NULL' +
+                    ' WHERE d.f_team_id=\'' + teamid + '\' AND' +
+                    '       ar.f_league_id = an.f_league_id' +
+                    ' ORDER BY d.participated_id;';
   console.log(queryString);
   getConnection(function(err, connection) {
+    connection.query(queryString, function(err, rows, fields) {
+      if (err){
+        console.log("Query error: " + err);
+      }
+      console.log("Sending " + rows);
+      res.json(rows);
+    });
+
+    connection.release();
+  });
+});
+
+app.get('/api/availablepicks/:team', function(req, res) {
+  var teamid = req.params.team;
+  var queryString = 'SELECT ar.description AS actor, ' +
+                    '       ar.actor_id, ' +
+                    '       an.description AS action, ' +
+                    '       an.action_id, ' +
+                    '       an.points' +
+                    '  FROM actor AS ar' +
+                    '  JOIN action AS an' +
+                    '  LEFT JOIN drafted_rule AS d' +
+                    '    ON d.actor_id = ar.actor_id AND' +
+                    '       ( d.action_id = an.action_id OR' +
+                    '         d.action_id IS NULL)' +
+                    '  LEFT JOIN f_team AS t' +
+                    '    ON t.lid = ar.f_league_id' +
+                    ' WHERE ar.f_league_id = t.lid AND' +
+                    '       an.f_league_id = t.lid AND' +
+                    '       t.tid = ' + teamid + ' AND' +
+                    '       d.participated_id IS NULL' +
+                    ' ORDER BY ar.actor_id;';
+  console.log(queryString);
+  getConnection(function(err, connection) {
+    connection.query(queryString, function(err, rows, fields) {
+      if (err){
+        console.log("Query error: " + err);
+      }
+      console.log("Sending " + rows);
+      res.json(rows);
+    });
+
+    connection.release();
+  });
+});
+
+app.post('/api/draftpick', function(req, res){
+  var obj = req.body;
+  var queryString = 'INSERT INTO drafted_rule(action_id, actor_id, fulfilled, f_team_id)' +
+                    'VALUES (' + obj.action + ', ' + obj.actor + ', 0, ' + obj.team + ')'
+  console.log(queryString);
+  getConnection(function(err, connection) {
+    var loginResult = false;
     connection.query(queryString, function(err, rows, fields) {
       if (err){
         console.log("Query error: " + err);
