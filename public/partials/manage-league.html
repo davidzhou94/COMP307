@@ -1,0 +1,45 @@
+<div class="container">
+
+  <!-- HEADER AND TEAM COUNT -->
+  <div class="jumbotron text-center">
+    <h1>There are <span ng-cloak class="label label-info">{{ leagueDrafts.length }}</span> drafted rules in this league. </h1>
+  </div>
+  
+  <table class="table table-bordered table-hover">
+    <thead>
+      <tr>
+        <th>Actor</th>
+        <th>Action</th>
+        <th>Fulfilled Count</th>
+        <th>Points</th>
+        <th>Options</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- LOOP OVER THE DRAFTS IN $scope.selectedDrafts -->
+      <tr ng-cloak ng-repeat="draft in leagueDrafts">
+        <td>
+          {{ draft.actor }}
+        </td>
+        <td>
+          {{ draft.action }}
+        </td>
+        <td>
+          {{ draft.fulfilled }}
+        </td>
+        <td>
+          {{ draft.points }}
+        </td>
+        <td>
+          <a href="" ng-click="increment($index);">
+            <button type="button" class="btn btn-default">Increment</button>
+          </a>
+          <a href="" ng-click="decrement($index);">
+            <button type="button" class="btn btn-default">Decrement</button>
+          </a>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  
+</div>

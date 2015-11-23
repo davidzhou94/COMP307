@@ -72,6 +72,50 @@ app.get('/api/leagues/:player', function(req, res) {
   simpleQuery(queryString, res);
 });
 
+app.get('/api/getLeagueOwner/:leagueId', function(req, res) {
+  var leagueId = req.params.leagueId;
+  var queryString = 
+    'SELECT f_league.owner_id' +
+    '  FROM f_league' +
+    ' WHERE f_league.lid = ' + leagueId + ';';
+  getConnection(function(connection) {
+    connection.query(queryString, function(err, rows, fields) {
+      if (err){
+        console.log("Query error: " + err);
+      }
+      if(rows.length > 0){
+        res.json(rows[0]);
+      } else {
+        res.json({owner_id : -1});
+      }
+    });
+
+    connection.release();
+  });
+});
+
+app.get('/api/getTeamOwner/:teamId', function(req, res) {
+  var teamId = req.params.teamId;
+  var queryString = 
+    'SELECT f_team.player_id' +
+    '  FROM f_team' +
+    ' WHERE f_team.tid = ' + teamId + ';';
+  getConnection(function(connection) {
+    connection.query(queryString, function(err, rows, fields) {
+      if (err){
+        console.log("Query error: " + err);
+      }
+      if(rows.length > 0){
+        res.json(rows[0]);
+      } else {
+        res.json({player_id : -1});
+      }
+    });
+
+    connection.release();
+  });
+});
+
 app.post('/api/login', function(req, res){
   loginObj = req.body;
   var queryString = 
@@ -79,9 +123,7 @@ app.post('/api/login', function(req, res){
     '  FROM player ' + 
     ' WHERE username = \'' + loginObj.username + '\'' +
     '   AND password = \'' + loginObj.password + '\';';
-  console.log(queryString);
   getConnection(function(connection) {
-    var loginResult = false;
     connection.query(queryString, function(err, rows, fields) {
       if (err){
         console.log("Query error: " + err);
@@ -151,9 +193,28 @@ app.get('/api/draftsbyactor/:actor', function(req, res) {
   simpleQuery(queryString, res);
 });
 
+app.get('/api/draftsByLeague/:league', function(req, res) {
+  var leagueId = req.params.league;
+  var queryString = 
+    'SELECT drafted_rule.participated_id,' +
+    '       drafted_rule.action_id,' +
+    '       drafted_rule.actor_id,' +
+    '       drafted_rule.fulfilled,' +
+    '       actor.description AS actor,' +
+    '       action.description AS action,' +
+    '       action.points' +
+    '  FROM drafted_rule' +
+    '  LEFT JOIN actor' +
+    '    ON drafted_rule.actor_id = actor.actor_id' +
+    '  LEFT JOIN action' +
+    '    ON drafted_rule.action_id = action.action_id' +
+    ' WHERE actor.f_league_id = ' + leagueId + ';';
+  simpleQuery(queryString, res);
+});
+
 app.post('/api/addDraftedRule', function(req, res){
   var obj = req.body;
-  var queryString = ""
+  var queryString = "";
   if (obj.action === null) {
     queryString = 
       'INSERT INTO drafted_rule(action_id, actor_id, fulfilled, f_team_id)' +
@@ -179,7 +240,7 @@ app.post('/api/addDraftedRule', function(req, res){
 
 app.post('/api/removeDraftedRule', function(req, res){
   var obj = req.body;
-  var queryString = ""
+  var queryString = "";
   if (obj.action === null) {
     queryString = 
       'DELETE FROM drafted_rule' +
@@ -192,6 +253,24 @@ app.post('/api/removeDraftedRule', function(req, res){
       '       drafted_rule.action_id = ' + obj.action + ' AND' +
       '       drafted_rule.f_team_id = ' + obj.team + 
       ' LIMIT 1;';
+  }
+  simpleQuery(queryString, res);
+});
+
+app.post('/api/setFulfilledCount/', function(req, res){
+  var obj = req.body;
+  var queryString = "";
+  if (obj.drafted_rule === null) {
+    queryString = 
+      'UPDATE drafted_rule' +
+      '   SET drafted_rule.fulfilled = ' + obj.fulfilled +
+      ' WHERE drafted_rule.actor_id = ' + obj.actor + ' AND' +
+      '       drafted_rule.action_id = ' + obj.action + ';';
+  } else {
+    queryString = 
+      'UPDATE drafted_rule' +
+      '   SET drafted_rule.fulfilled = ' + obj.fulfilled +
+      ' WHERE drafted_rule.participated_id = ' + obj.drafted_rule + ';';
   }
   simpleQuery(queryString, res);
 });

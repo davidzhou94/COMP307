@@ -15,12 +15,25 @@ fantasyControllers.controller('defaultController', ['$scope', 'userInfo',
     $scope.userInfo = userInfo;
 }]);
 
-fantasyControllers.controller('leagueController', ['$scope', '$http', '$routeParams',
-  function ($scope, $http, $routeParams) {
+fantasyControllers.controller('leagueController', ['$scope', '$http', '$routeParams', 'userInfo',
+  function ($scope, $http, $routeParams, userInfo) {
     // when landing on the page, get all teams for the given league and show them
+    $scope.teams = [];
+    $scope.isOwner = false;
+    $scope.leagueId = $routeParams.leagueid;
     $http.get('/api/teams/' + $routeParams.leagueid)
       .then(function(response) {
         $scope.teams = response.data;
+      },
+      function(response) {
+        console.log('Error: ' + response.data);
+      });
+      
+    $http.get('/api/getLeagueOwner/' + $routeParams.leagueid)
+      .then(function(response) {
+        if (response.data.owner_id >= 0) {
+          $scope.isOwner = (userInfo.playerId === response.data.owner_id);
+        }
       },
       function(response) {
         console.log('Error: ' + response.data);
@@ -59,15 +72,24 @@ fantasyControllers.controller('loginController', ['$scope', '$http', '$location'
     }
 }]);
 
-fantasyControllers.controller('teamController', ['$scope', '$http', '$routeParams', 
-  function ($scope, $http, $routeParams) {
+fantasyControllers.controller('teamController', ['$scope', '$http', '$routeParams', 'userInfo',
+  function ($scope, $http, $routeParams, userInfo) {
     $scope.selectedDrafts = [];
     $scope.availableDrafts = [];
+    $scope.isOwner = false;
+    
     // when landing on the page, get all drafts for the given team and show them
-
     $http.get('/api/drafts/' + $routeParams.teamid)
       .then(function(response) {
         $scope.selectedDrafts = response.data;
+      },
+      function(response) {
+        console.log('Error: ' + response.data);
+      });
+      
+    $http.get('/api/getTeamOwner/' + $routeParams.teamid)
+      .then(function(response) {
+        $scope.isOwner = (response.data.player_id === userInfo.playerId);
       },
       function(response) {
         console.log('Error: ' + response.data);
@@ -144,6 +166,41 @@ fantasyControllers.controller('teamController', ['$scope', '$http', '$routeParam
     }
 }]);
 
+fantasyControllers.controller('manageLeagueController', ['$scope', '$http', '$routeParams', 
+  function ($scope, $http, $routeParams) {
+    $scope.leagueDrafts = [];
+
+    $http.get('/api/draftsByLeague/' + $routeParams.leagueId)
+      .then(function(response) {
+        $scope.leagueDrafts = response.data;
+      },
+      function(response) {
+        console.log('Error: ' + response.data);
+      });
+    
+    var changeFulfilled = function(draft, value, index) {
+      $http.post('/api/setFulfilledCount', JSON.stringify({
+          drafted_rule : draft, 
+          fulfilled : value
+        }))
+        .then(function(response) {
+          if (response.data.affectedRows > 0) {
+            $scope.leagueDrafts[index].fulfilled = value;
+          }
+        },
+        function(data) {
+          console.log('Error: ' + data);
+        });
+    }
+    
+    $scope.increment = function(index) {
+      changeFulfilled($scope.leagueDrafts[index].participated_id, $scope.leagueDrafts[index].fulfilled + 1, index);
+    }
+    $scope.decrement = function(index) {
+      changeFulfilled($scope.leagueDrafts[index].participated_id, $scope.leagueDrafts[index].fulfilled - 1, index);
+    }
+}]);
+
 var fantasyApp = angular.module('fantasyApp', [
   'ngRoute',
   'fantasyControllers'
@@ -152,6 +209,10 @@ var fantasyApp = angular.module('fantasyApp', [
 fantasyApp.config(['$routeProvider',
   function($routeProvider) {
     $routeProvider.
+      when('/manageLeague/:leagueId', {
+        templateUrl : 'partials/manage-league.html',
+        controller : 'manageLeagueController'
+      }).
       when('/team/:teamid', {
         templateUrl : 'partials/team.html',
         controller : 'teamController'

@@ -12,7 +12,7 @@
         <th>Action</th>
         <th>Fulfilled Count</th>
         <th>Points</th>
-        <th>Options</th>
+        <th ng-show="isOwner">Options</th>
       </tr>
     </thead>
     <tbody>
@@ -30,7 +30,7 @@
         <td>
           {{ sdraft.points }}
         </td>
-        <td>
+        <td ng-show="isOwner">
           <a href="" ng-click="removeDraftPick(null, sdraft.actor_id, $index);">
             <button type="button" class="btn btn-default">Remove Actor</button>
           </a>
@@ -42,7 +42,7 @@
     </tbody>
   </table>
   
-  <div ng-init="showDrafts=false">
+  <div ng-show="isOwner" ng-init="showDrafts=false">
     <a href="" ng-click="showDrafts=!showDrafts; load(showDrafts);">
       <button type="button" class="btn btn-default">Draft new picks</button>
     </a>
