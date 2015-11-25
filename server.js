@@ -37,8 +37,29 @@ var simpleQuery = function(queryString, res) {
     connection.query(queryString, function(err, result, fields) {
       if (err) {
         console.log("[CRITICAL] Query error: " + err);
+        res.json(null);
+      } else {
+        res.json(result);
       }
-      res.json(result);
+    });
+
+    connection.release();
+  });
+}
+
+var singleRowQuery = function(queryString, res) {
+  getConnection(function(connection) {
+    connection.query(queryString, function(err, result, fields) {
+      if (err){
+        console.log("Query error: " + err);
+        res.json(null);
+      } else {
+        if(result.length > 0){
+          res.json(result[0]);
+        } else {
+          res.json(null);
+        }
+      }
     });
 
     connection.release();
@@ -63,19 +84,19 @@ app.get('/api/getActionsByLeague/:leagueId', function(req, res) {
   simpleQuery(queryString, res);
 });
 
-app.get('/api/teams/:league', function(req, res) {
-  var leagueid = req.params.league;
+app.get('/api/getTeamsByLeague/:leagueId', function(req, res) {
+  var leagueId = req.params.leagueId;
   var queryString = 
     'SELECT t.tid, t.team_name, p.username, t.total_points ' +
     '  FROM v_f_team AS t' + 
     '  LEFT JOIN player AS p' +
     '    ON t.player_id = p.pid' +
-    ' WHERE t.lid= ' + leagueid + ';';
+    ' WHERE t.lid= ' + leagueId + ';';
   simpleQuery(queryString, res);
 });
 
-app.get('/api/leagues/:player', function(req, res) {
-  var playerid = req.params.player;
+app.get('/api/getLeaguesByPlayer/:playerId', function(req, res) {
+  var playerId = req.params.playerId;
   var queryString = 
     'SELECT f_league.lid,' +
     '       f_league.description,' +
@@ -85,7 +106,7 @@ app.get('/api/leagues/:player', function(req, res) {
     '  FROM v_f_team' + 
     '  LEFT JOIN f_league' +
     '    ON v_f_team.lid = f_league.lid' +
-    ' WHERE v_f_team.player_id = ' + playerid + ';';
+    ' WHERE v_f_team.player_id = ' + playerId + ';';
   simpleQuery(queryString, res);
 });
 
@@ -95,20 +116,7 @@ app.get('/api/getLeagueOwner/:leagueId', function(req, res) {
     'SELECT f_league.owner_id' +
     '  FROM f_league' +
     ' WHERE f_league.lid = ' + leagueId + ';';
-  getConnection(function(connection) {
-    connection.query(queryString, function(err, rows, fields) {
-      if (err){
-        console.log("Query error: " + err);
-      }
-      if(rows.length > 0){
-        res.json(rows[0]);
-      } else {
-        res.json({owner_id : -1});
-      }
-    });
-
-    connection.release();
-  });
+  singleRowQuery(queryString, res);
 });
 
 app.get('/api/getTeamOwner/:teamId', function(req, res) {
@@ -117,47 +125,21 @@ app.get('/api/getTeamOwner/:teamId', function(req, res) {
     'SELECT f_team.player_id' +
     '  FROM f_team' +
     ' WHERE f_team.tid = ' + teamId + ';';
-  getConnection(function(connection) {
-    connection.query(queryString, function(err, rows, fields) {
-      if (err){
-        console.log("Query error: " + err);
-      }
-      if(rows.length > 0){
-        res.json(rows[0]);
-      } else {
-        res.json({player_id : -1});
-      }
-    });
-
-    connection.release();
-  });
+  singleRowQuery(queryString, res);
 });
 
 app.post('/api/login', function(req, res){
-  loginObj = req.body;
+  var loginObj = req.body;
   var queryString = 
     'SELECT pid, username' +
     '  FROM player ' + 
     ' WHERE username = \'' + loginObj.username + '\'' +
     '   AND password = \'' + loginObj.password + '\';';
-  getConnection(function(connection) {
-    connection.query(queryString, function(err, rows, fields) {
-      if (err){
-        console.log("Query error: " + err);
-      }
-      if(rows.length > 0){
-        res.json(rows[0]);
-      } else {
-        res.json({pid : -1});
-      }
-    });
-
-    connection.release();
-  });
+  singleRowQuery(queryString, res);
 });
 
-app.get('/api/drafts/:team', function(req, res) {
-  var teamid = req.params.team;
+app.get('/api/getDraftsByTeam/:teamId', function(req, res) {
+  var teamId = req.params.teamId;
   var queryString = 
     'SELECT d.participated_id, ' +
     '       d.fulfilled, ' +
@@ -171,13 +153,13 @@ app.get('/api/drafts/:team', function(req, res) {
     '    ON d.actor_id = ar.actor_id' +
     '  LEFT JOIN action AS an' +
     '    ON d.action_id = an.action_id' +
-    ' WHERE d.f_team_id = ' + teamid +
+    ' WHERE d.f_team_id = ' + teamId +
     ' ORDER BY d.participated_id;';
   simpleQuery(queryString, res);
 });
 
-app.get('/api/availablepicks/:team', function(req, res) {
-  var teamid = req.params.team;
+app.get('/api/getAvailablePicksByTeam/:teamId', function(req, res) {
+  var teamId = req.params.team;
   var queryString = 
     'SELECT ar.description AS actor, ' +
     '       ar.actor_id, ' +
@@ -194,24 +176,14 @@ app.get('/api/availablepicks/:team', function(req, res) {
     '    ON t.lid = ar.f_league_id' +
     ' WHERE ar.f_league_id = t.lid AND' +
     '       an.f_league_id = t.lid AND' +
-    '       t.tid = ' + teamid + ' AND' +
+    '       t.tid = ' + teamId + ' AND' +
     '       d.participated_id IS NULL' +
     ' ORDER BY ar.actor_id;';
   simpleQuery(queryString, res);
 });
 
-app.get('/api/draftsbyactor/:actor', function(req, res) {
-  var actorid = req.params.actor;
-  var queryString = 
-    'SELECT *' +
-    '  FROM drafted_rule AS d' +
-    ' WHERE d.actor_id = ' + actorid +
-    ' LIMIT 1;';
-  simpleQuery(queryString, res);
-});
-
-app.get('/api/draftsByLeague/:league', function(req, res) {
-  var leagueId = req.params.league;
+app.get('/api/getDraftsByLeague/:leagueId', function(req, res) {
+  var leagueId = req.params.leagueId;
   var queryString = 
     'SELECT drafted_rule.participated_id,' +
     '       drafted_rule.action_id,' +
@@ -307,18 +279,9 @@ app.post('/api/addActor', function(req, res){
           'SELECT *' +
           '  FROM actor' +
           ' WHERE actor.actor_id = ' + rows.insertId;
-          connection.query(queryString, function(err, rows, fields) {
-            if (err){
-              console.log("Query error: " + err);
-            }
-            if(rows.length > 0){
-              res.json(rows[0]);
-            } else {
-              res.json({actor_id : -1});
-            }
-          });
+        singleRowQuery(queryString, res);
       } else {
-        res.json({actor_id : -1});
+        res.json(null);
       }
       
       connection.release
@@ -349,18 +312,9 @@ app.post('/api/addAction', function(req, res){
           'SELECT *' +
           '  FROM action' +
           ' WHERE action.action_id = ' + rows.insertId;
-          connection.query(queryString, function(err, rows, fields) {
-            if (err){
-              console.log("Query error: " + err);
-            }
-            if(rows.length > 0){
-              res.json(rows[0]);
-            } else {
-              res.json({action_id : -1});
-            }
-          });
+        singleRowQuery(queryString, res);
       } else {
-        res.json({action_id : -1});
+        res.json(null);
       }
       
       connection.release

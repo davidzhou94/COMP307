@@ -21,7 +21,7 @@ fantasyControllers.controller('leagueController', ['$scope', '$http', '$routePar
     $scope.teams = [];
     $scope.isOwner = false;
     $scope.leagueId = $routeParams.leagueid;
-    $http.get('/api/teams/' + $routeParams.leagueid)
+    $http.get('/api/getTeamsByLeague/' + $routeParams.leagueid)
       .then(function(response) {
         $scope.teams = response.data;
       },
@@ -31,7 +31,7 @@ fantasyControllers.controller('leagueController', ['$scope', '$http', '$routePar
       
     $http.get('/api/getLeagueOwner/' + $routeParams.leagueid)
       .then(function(response) {
-        if (response.data.owner_id >= 0) {
+        if (response.data != "null") {
           $scope.isOwner = (userInfo.playerId === response.data.owner_id);
         }
       },
@@ -43,7 +43,7 @@ fantasyControllers.controller('leagueController', ['$scope', '$http', '$routePar
 fantasyControllers.controller('homeController', ['$scope', '$http', '$routeParams', 
   function ($scope, $http, $routeParams) {
     // when landing on the page, get all leagues for the given player and show them
-    $http.get('/api/leagues/' + $routeParams.playerid)
+    $http.get('/api/getLeaguesByPlayer/' + $routeParams.playerid)
       .then(function(response) {
         $scope.leagues = response.data;
       },
@@ -58,7 +58,7 @@ fantasyControllers.controller('loginController', ['$scope', '$http', '$location'
     $scope.login = function(){
       $http.post('/api/login', JSON.stringify($scope.loginCredentials))
         .then(function(response) {
-          if(response.data.pid < 0){
+          if(response.data == "null"){
             $scope.loginResult = "Login Failed";
           }else{
             userInfo.playerId = response.data.pid;
@@ -79,7 +79,7 @@ fantasyControllers.controller('teamController', ['$scope', '$http', '$routeParam
     $scope.isOwner = false;
     
     // when landing on the page, get all drafts for the given team and show them
-    $http.get('/api/drafts/' + $routeParams.teamid)
+    $http.get('/api/getDraftsByTeam/' + $routeParams.teamid)
       .then(function(response) {
         $scope.selectedDrafts = response.data;
       },
@@ -97,7 +97,7 @@ fantasyControllers.controller('teamController', ['$scope', '$http', '$routeParam
 
     $scope.load = function(show) {
       if (show) {
-        $http.get('/api/availablepicks/' + $routeParams.teamid)
+        $http.get('/api/getAvailablePicksByTeam/' + $routeParams.teamid)
           .then(function(response) {
             $scope.availableDrafts = response.data;
           },
@@ -173,7 +173,7 @@ fantasyControllers.controller('manageLeagueController', ['$scope', '$http', '$ro
     $scope.actors = [];
     $scope.actions = [];
 
-    $http.get('/api/draftsByLeague/' + leagueId)
+    $http.get('/api/getDraftsByLeague/' + leagueId)
       .then(function(response) {
         $scope.leagueDrafts = response.data;
       },
@@ -243,7 +243,7 @@ fantasyControllers.controller('manageLeagueController', ['$scope', '$http', '$ro
         managedActorId : null
       }))
         .then(function(response) {
-          if (response.data.actor_id > 0) {
+          if (response.data != "null") {
             $scope.actors.push(response.data);
           }
         },
@@ -274,7 +274,7 @@ fantasyControllers.controller('manageLeagueController', ['$scope', '$http', '$ro
         managedActionId : null
       }))
         .then(function(response) {
-          if (response.data.action_id > 0) {
+          if (response.data != null) {
             $scope.actions.push(response.data);
           }
         },
