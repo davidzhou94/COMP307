@@ -159,7 +159,7 @@ app.get('/api/getDraftsByTeam/:teamId', function(req, res) {
 });
 
 app.get('/api/getAvailablePicksByTeam/:teamId', function(req, res) {
-  var teamId = req.params.team;
+  var teamId = req.params.teamId;
   var queryString = 
     'SELECT ar.description AS actor, ' +
     '       ar.actor_id, ' +
