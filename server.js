@@ -45,8 +45,25 @@ var simpleQuery = function(queryString, res) {
   });
 }
 
+app.get('/api/getActorsByLeague/:leagueId', function(req, res) {
+  var leagueId = req.params.leagueId;
+  var queryString = 
+    'SELECT * ' +
+    '  FROM actor' + 
+    ' WHERE actor.f_league_id = ' + leagueId + ';';
+  simpleQuery(queryString, res);
+});
+
+app.get('/api/getActionsByLeague/:leagueId', function(req, res) {
+  var leagueId = req.params.leagueId;
+  var queryString = 
+    'SELECT * ' +
+    '  FROM action' + 
+    ' WHERE action.f_league_id = ' + leagueId + ';';
+  simpleQuery(queryString, res);
+});
+
 app.get('/api/teams/:league', function(req, res) {
-  // hardcoded list of teams for now
   var leagueid = req.params.league;
   var queryString = 
     'SELECT t.tid, t.team_name, p.username, t.total_points ' +
@@ -272,6 +289,90 @@ app.post('/api/setFulfilledCount/', function(req, res){
       '   SET drafted_rule.fulfilled = ' + obj.fulfilled +
       ' WHERE drafted_rule.participated_id = ' + obj.drafted_rule + ';';
   }
+  simpleQuery(queryString, res);
+});
+
+app.post('/api/addActor', function(req, res){
+  var obj = req.body;
+  var queryString =
+    'INSERT INTO actor(description, f_league_id, managed_actor_id)' +
+    'VALUES (\'' + obj.description + '\', ' + obj.leagueId + ', ' + obj.managedActorId + ');';
+  getConnection(function(connection) {
+    connection.query(queryString, function(err, rows, fields) {
+      if (err){
+        console.log("Query error: " + err);
+      }
+      if(rows.affectedRows > 0){
+        var queryString = 
+          'SELECT *' +
+          '  FROM actor' +
+          ' WHERE actor.actor_id = ' + rows.insertId;
+          connection.query(queryString, function(err, rows, fields) {
+            if (err){
+              console.log("Query error: " + err);
+            }
+            if(rows.length > 0){
+              res.json(rows[0]);
+            } else {
+              res.json({actor_id : -1});
+            }
+          });
+      } else {
+        res.json({actor_id : -1});
+      }
+      
+      connection.release
+    });
+  });
+});
+
+app.post('/api/removeActor', function(req, res){
+  var obj = req.body;
+  var queryString = 
+    'DELETE FROM actor' +
+    ' WHERE actor.actor_id = ' + obj.actor + ';';
+  simpleQuery(queryString, res);
+});
+
+app.post('/api/addAction', function(req, res){
+  var obj = req.body;
+  var queryString =
+    'INSERT INTO action(description, points, f_league_id, managed_action_id)' +
+    'VALUES (\'' + obj.description + '\', ' + obj.points + ', ' + obj.leagueId + ', ' + obj.managedActionId + ');';
+  getConnection(function(connection) {
+    connection.query(queryString, function(err, rows, fields) {
+      if (err){
+        console.log("Query error: " + err);
+      }
+      if(rows.affectedRows > 0){
+        var queryString = 
+          'SELECT *' +
+          '  FROM action' +
+          ' WHERE action.action_id = ' + rows.insertId;
+          connection.query(queryString, function(err, rows, fields) {
+            if (err){
+              console.log("Query error: " + err);
+            }
+            if(rows.length > 0){
+              res.json(rows[0]);
+            } else {
+              res.json({action_id : -1});
+            }
+          });
+      } else {
+        res.json({action_id : -1});
+      }
+      
+      connection.release
+    });
+  });
+});
+
+app.post('/api/removeAction', function(req, res){
+  var obj = req.body;
+  var queryString = 
+    'DELETE FROM action' +
+    ' WHERE action.action_id = ' + obj.action + ';';
   simpleQuery(queryString, res);
 });
 

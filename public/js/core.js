@@ -168,11 +168,30 @@ fantasyControllers.controller('teamController', ['$scope', '$http', '$routeParam
 
 fantasyControllers.controller('manageLeagueController', ['$scope', '$http', '$routeParams', 
   function ($scope, $http, $routeParams) {
+    var leagueId = $routeParams.leagueId;
     $scope.leagueDrafts = [];
+    $scope.actors = [];
+    $scope.actions = [];
 
-    $http.get('/api/draftsByLeague/' + $routeParams.leagueId)
+    $http.get('/api/draftsByLeague/' + leagueId)
       .then(function(response) {
         $scope.leagueDrafts = response.data;
+      },
+      function(response) {
+        console.log('Error: ' + response.data);
+      });
+      
+    $http.get('/api/getActorsByLeague/' + leagueId)
+      .then(function(response) {
+        $scope.actors = response.data;
+      },
+      function(response) {
+        console.log('Error: ' + response.data);
+      });
+      
+    $http.get('/api/getActionsByLeague/' + leagueId)
+      .then(function(response) {
+        $scope.actions = response.data;
       },
       function(response) {
         console.log('Error: ' + response.data);
@@ -180,9 +199,9 @@ fantasyControllers.controller('manageLeagueController', ['$scope', '$http', '$ro
     
     var changeFulfilled = function(draft, value, index) {
       $http.post('/api/setFulfilledCount', JSON.stringify({
-          drafted_rule : draft, 
-          fulfilled : value
-        }))
+        drafted_rule : draft, 
+        fulfilled : value
+      }))
         .then(function(response) {
           if (response.data.affectedRows > 0) {
             $scope.leagueDrafts[index].fulfilled = value;
@@ -196,8 +215,72 @@ fantasyControllers.controller('manageLeagueController', ['$scope', '$http', '$ro
     $scope.increment = function(index) {
       changeFulfilled($scope.leagueDrafts[index].participated_id, $scope.leagueDrafts[index].fulfilled + 1, index);
     }
+    
     $scope.decrement = function(index) {
-      changeFulfilled($scope.leagueDrafts[index].participated_id, $scope.leagueDrafts[index].fulfilled - 1, index);
+      if ($scope.leagueDrafts[index].fulfilled > 0) {
+        changeFulfilled($scope.leagueDrafts[index].participated_id, $scope.leagueDrafts[index].fulfilled - 1, index);
+      }
+    }
+    
+    $scope.removeActor = function(index) {
+      $http.post('/api/removeActor/', JSON.stringify({
+        actor : $scope.actors[index].actor_id
+      }))
+        .then(function(response) {
+          if (response.data.affectedRows > 0) {
+            $scope.actors.splice(index, 1);
+          }
+        },
+        function(data) {
+          console.log('Error: ' + data);
+        });
+    }
+    
+    $scope.addActor = function() {
+      $http.post('/api/addActor/', JSON.stringify({
+        description : $scope.newActor.description,
+        leagueId : leagueId,
+        managedActorId : null
+      }))
+        .then(function(response) {
+          if (response.data.actor_id > 0) {
+            $scope.actors.push(response.data);
+          }
+        },
+        function(data) {
+          console.log('Error: ' + data);
+        });
+    }
+    
+    $scope.removeAction = function(index) {
+      $http.post('/api/removeAction/', JSON.stringify({
+        action : $scope.actions[index].action_id
+      }))
+        .then(function(response) {
+          if (response.data.affectedRows > 0) {
+            $scope.actions.splice(index, 1);
+          }
+        },
+        function(data) {
+          console.log('Error: ' + data);
+        });
+    }
+    
+    $scope.addAction = function() {
+      $http.post('/api/addAction/', JSON.stringify({
+        description : $scope.newAction.description,
+        points : $scope.newAction.points,
+        leagueId : leagueId,
+        managedActionId : null
+      }))
+        .then(function(response) {
+          if (response.data.action_id > 0) {
+            $scope.actions.push(response.data);
+          }
+        },
+        function(data) {
+          console.log('Error: ' + data);
+        });
     }
 }]);
 

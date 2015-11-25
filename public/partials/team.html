@@ -31,21 +31,15 @@
           {{ sdraft.points }}
         </td>
         <td ng-show="isOwner">
-          <a href="" ng-click="removeDraftPick(null, sdraft.actor_id, $index);">
-            <button type="button" class="btn btn-default">Remove Actor</button>
-          </a>
-          <a href="" ng-click="removeDraftPick(sdraft.action_id, sdraft.actor_id, $index);">
-            <button type="button" class="btn btn-default">Remove Action</button>
-          </a>
+          <button ng-click="removeDraftPick(null, sdraft.actor_id, $index);" type="button" class="btn btn-default">Remove Actor</button>
+          <button ng-click="removeDraftPick(sdraft.action_id, sdraft.actor_id, $index);" type="button" class="btn btn-default">Remove Action</button>
         </td>
       </tr>
     </tbody>
   </table>
   
   <div ng-show="isOwner" ng-init="showDrafts=false">
-    <a href="" ng-click="showDrafts=!showDrafts; load(showDrafts);">
-      <button type="button" class="btn btn-default">Draft new picks</button>
-    </a>
+    <button ng-click="showDrafts=!showDrafts; load(showDrafts);" type="button" class="btn btn-default">Draft new picks</button>
     <br />
     <div ng-show="showDrafts">
       <table class="table table-bordered table-hover">
@@ -70,12 +64,8 @@
               {{ adraft.points }}
             </td>
             <td>
-              <a href="" ng-click="addDraftPick(null, adraft.actor_id, $index);">
-                <button type="button" class="btn btn-default">Draft Actor</button>
-              </a>
-              <a href="" ng-click="addDraftPick(adraft.action_id, adraft.actor_id, $index);">
-                <button type="button" class="btn btn-default">Draft Action</button>
-              </a>
+              <button ng-click="addDraftPick(null, adraft.actor_id, $index);" type="button" class="btn btn-default">Draft Actor</button>
+              <button ng-click="addDraftPick(adraft.action_id, adraft.actor_id, $index);" type="button" class="btn btn-default">Draft Action</button>
             </td>
           </tr>
         </tbody>
