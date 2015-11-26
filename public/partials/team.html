@@ -1,76 +1,72 @@
-<div class="container">
+<!-- HEADER AND TEAM COUNT -->
+<div class="jumbotron text-center">
+  <h1>There are <span ng-cloak class="label label-info">{{ selectedDrafts.length }}</span> drafts on this team. </h1>
+</div>
 
-  <!-- HEADER AND TEAM COUNT -->
-  <div class="jumbotron text-center">
-    <h1>There are <span ng-cloak class="label label-info">{{ selectedDrafts.length }}</span> drafts on this team. </h1>
+<table class="table table-bordered table-hover">
+  <thead>
+    <tr>
+      <th>Actor</th>
+      <th>Action</th>
+      <th>Fulfilled Count</th>
+      <th>Points</th>
+      <th ng-show="isOwner">Options</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- LOOP OVER THE DRAFTS IN $scope.selectedDrafts -->
+    <tr ng-cloak ng-repeat="sdraft in selectedDrafts">
+      <td>
+        {{ sdraft.actor }}
+      </td>
+      <td>
+        {{ sdraft.action }}
+      </td>
+      <td>
+        {{ sdraft.fulfilled }}
+      </td>
+      <td>
+        {{ sdraft.points }}
+      </td>
+      <td ng-show="isOwner">
+        <button ng-click="removeDraftPick(null, sdraft.actor_id, $index);" type="button" class="btn btn-default">Remove Actor</button>
+        <button ng-click="removeDraftPick(sdraft.action_id, sdraft.actor_id, $index);" type="button" class="btn btn-default">Remove Action</button>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<div ng-show="isOwner" ng-init="showDrafts=false">
+  <button ng-click="showDrafts=!showDrafts; load(showDrafts);" type="button" class="btn btn-default">Draft new picks</button>
+  <br />
+  <div ng-show="showDrafts">
+    <table class="table table-bordered table-hover">
+      <thead>
+        <tr>
+          <th>Actor</th>
+          <th>Action</th>
+          <th>Points</th>
+          <th>Options</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- LOOP OVER THE AVAILABLE DRAFTS IN $scope.availableDrafts -->
+        <tr ng-cloak ng-repeat="adraft in availableDrafts">
+          <td>
+            {{ adraft.actor }}
+          </td>
+          <td>
+            {{ adraft.action }}
+          </td>
+          <td>
+            {{ adraft.points }}
+          </td>
+          <td>
+            <button ng-click="addDraftPick(null, adraft.actor_id, $index);" type="button" class="btn btn-default">Draft Actor</button>
+            <button ng-click="addDraftPick(adraft.action_id, adraft.actor_id, $index);" type="button" class="btn btn-default">Draft Action</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
-  
-  <table class="table table-bordered table-hover">
-    <thead>
-      <tr>
-        <th>Actor</th>
-        <th>Action</th>
-        <th>Fulfilled Count</th>
-        <th>Points</th>
-        <th ng-show="isOwner">Options</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- LOOP OVER THE DRAFTS IN $scope.selectedDrafts -->
-      <tr ng-cloak ng-repeat="sdraft in selectedDrafts">
-        <td>
-          {{ sdraft.actor }}
-        </td>
-        <td>
-          {{ sdraft.action }}
-        </td>
-        <td>
-          {{ sdraft.fulfilled }}
-        </td>
-        <td>
-          {{ sdraft.points }}
-        </td>
-        <td ng-show="isOwner">
-          <button ng-click="removeDraftPick(null, sdraft.actor_id, $index);" type="button" class="btn btn-default">Remove Actor</button>
-          <button ng-click="removeDraftPick(sdraft.action_id, sdraft.actor_id, $index);" type="button" class="btn btn-default">Remove Action</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-  
-  <div ng-show="isOwner" ng-init="showDrafts=false">
-    <button ng-click="showDrafts=!showDrafts; load(showDrafts);" type="button" class="btn btn-default">Draft new picks</button>
-    <br />
-    <div ng-show="showDrafts">
-      <table class="table table-bordered table-hover">
-        <thead>
-          <tr>
-            <th>Actor</th>
-            <th>Action</th>
-            <th>Points</th>
-            <th>Options</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- LOOP OVER THE AVAILABLE DRAFTS IN $scope.availableDrafts -->
-          <tr ng-cloak ng-repeat="adraft in availableDrafts">
-            <td>
-              {{ adraft.actor }}
-            </td>
-            <td>
-              {{ adraft.action }}
-            </td>
-            <td>
-              {{ adraft.points }}
-            </td>
-            <td>
-              <button ng-click="addDraftPick(null, adraft.actor_id, $index);" type="button" class="btn btn-default">Draft Actor</button>
-              <button ng-click="addDraftPick(adraft.action_id, adraft.actor_id, $index);" type="button" class="btn btn-default">Draft Action</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-  
 </div>

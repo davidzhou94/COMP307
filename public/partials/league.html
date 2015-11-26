@@ -1,37 +1,33 @@
-<div class="container">
-
-  <!-- HEADER AND TEAM COUNT -->
-  <div class="jumbotron text-center">
-    <h1>There are <span ng-cloak class="label label-info">{{ teams.length }}</span> teams in this league. </h1>
-  </div>
-      
-      
-  <!-- TEAM LIST -->
-  <table class="table table-bordered table-hover">
-    <thead>
-      <tr>
-        <th>Team Name</th>
-        <th>Owner</th>
-        <th>Standing</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- LOOP OVER THE TEAMS IN $scope.teams -->
-      <tr ng-cloak ng-repeat="team in teams">
-        <td>
-          <a href="#/team/{{team.tid}}">{{ team.team_name }}</a>
-        </td>
-        <td>
-          {{ team.username }}
-        </td>
-        <td>
-          {{ team.total_points || 0 }}
-        </td>
-      </tr>
-    </tbody>
-  </table>
-  <a href="#/manageLeague/{{leagueId}}" ng-show="isOwner">
-    <button type="button" class="btn btn-default">Manage League</button>
-  </a>
-
+<!-- HEADER AND TEAM COUNT -->
+<div class="jumbotron text-center">
+  <h1>There are <span ng-cloak class="label label-info">{{ teams.length }}</span> teams in this league. </h1>
 </div>
+    
+    
+<!-- TEAM LIST -->
+<table class="table table-bordered table-hover">
+  <thead>
+    <tr>
+      <th>Team Name</th>
+      <th>Owner</th>
+      <th>Standing</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- LOOP OVER THE TEAMS IN $scope.teams -->
+    <tr ng-cloak ng-repeat="team in teams">
+      <td>
+        <a href="#/team/{{team.tid}}">{{ team.team_name }}</a>
+      </td>
+      <td>
+        {{ team.username }}
+      </td>
+      <td>
+        {{ team.total_points || 0 }}
+      </td>
+    </tr>
+  </tbody>
+</table>
+<a href="#/manageLeague/{{leagueId}}" ng-show="isOwner">
+  <button type="button" class="btn btn-default">Manage League</button>
+</a>

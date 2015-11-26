@@ -273,18 +273,20 @@ app.post('/api/addActor', function(req, res){
     connection.query(queryString, function(err, rows, fields) {
       if (err){
         console.log("Query error: " + err);
-      }
-      if(rows.affectedRows > 0){
-        var queryString = 
-          'SELECT *' +
-          '  FROM actor' +
-          ' WHERE actor.actor_id = ' + rows.insertId;
-        singleRowQuery(queryString, res);
-      } else {
         res.json(null);
+      } else {
+        if(rows.affectedRows > 0){
+          var queryString = 
+            'SELECT *' +
+            '  FROM actor' +
+            ' WHERE actor.actor_id = ' + rows.insertId;
+          singleRowQuery(queryString, res);
+        } else {
+          res.json(null);
+        }
       }
-      
       connection.release
+      
     });
   });
 });
@@ -306,17 +308,18 @@ app.post('/api/addAction', function(req, res){
     connection.query(queryString, function(err, rows, fields) {
       if (err){
         console.log("Query error: " + err);
-      }
-      if(rows.affectedRows > 0){
-        var queryString = 
-          'SELECT *' +
-          '  FROM action' +
-          ' WHERE action.action_id = ' + rows.insertId;
-        singleRowQuery(queryString, res);
+        res.json(null)
       } else {
-        res.json(null);
+        if(rows.affectedRows > 0){
+          var queryString = 
+            'SELECT *' +
+            '  FROM action' +
+            ' WHERE action.action_id = ' + rows.insertId;
+          singleRowQuery(queryString, res);
+        } else {
+          res.json(null);
+        }
       }
-      
       connection.release
     });
   });
@@ -328,6 +331,31 @@ app.post('/api/removeAction', function(req, res){
     'DELETE FROM action' +
     ' WHERE action.action_id = ' + obj.action + ';';
   simpleQuery(queryString, res);
+});
+
+app.post('/api/addPlayer', function(req, res){
+  var obj = req.body;
+  var queryString =
+    'INSERT INTO player(username, password, email)' +
+    'VALUES (\'' + obj.username + '\', \'' + obj.password + '\', \'' + obj.email + '\');';
+  getConnection(function(connection) {
+    connection.query(queryString, function(err, rows, fields) {
+      if (err){
+        console.log("Query error: " + err);
+      }
+      if(rows.affectedRows > 0){
+        var queryString = 
+          'SELECT *' +
+          '  FROM player' +
+          ' WHERE player.pid = ' + rows.insertId;
+        singleRowQuery(queryString, res);
+      } else {
+        res.json(null);
+      }
+      
+      connection.release
+    });
+  });
 });
 
 app.get('*', function(req, res) {

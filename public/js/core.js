@@ -1,18 +1,90 @@
 // declare a module
-var fantasyControllers = angular.module('fantasyControllers', []);
+var fantasyControllers = angular.module('fantasyControllers', ["ngMessages"]);
 
 fantasyControllers.factory('userInfo', function() {
-    var userInfo = {
-      playerId : null,
-      username : null,
-    }
-    
-    return userInfo;
+  var userInfo = {
+    playerId : null,
+    username : null,
+  }
+  
+  return userInfo;
 });
 
-fantasyControllers.controller('defaultController', ['$scope', 'userInfo',
-  function ($scope, userInfo) {
+fantasyControllers.factory('alertService', function() {
+  var service = {
+    add: add,
+    closeAlert: closeAlert,
+    closeAlertIdx: closeAlertIdx,
+    clear: clear,
+    get: get
+  },
+  alerts = [];
+
+  return service;
+
+  function add(type, msg) {
+    return alerts.push({
+      type: type,
+      msg: msg,
+      close: function() {
+        return closeAlert(this);
+      }
+    });
+  }
+
+  function closeAlert(alert) {
+    return closeAlertIdx(alerts.indexOf(alert));
+  }
+
+  function closeAlertIdx(index) {
+    return alerts.splice(index, 1);
+  }
+
+  function clear(){
+    alerts.length = 0;
+  }
+
+  function get() {
+    return alerts;
+  }
+});
+
+// A silly hacky way of getting bootstrap tabs to work.
+/*fantasyControllers.directive('showTab', function () {
+  return {
+    link: function (scope, element, attrs) {
+      var $elm = angular.element(element);
+      element.bind('click', function(event) {
+        event.preventDefault();
+        $(element).tab('show');
+      });
+    }
+  };
+});*/
+ 
+// for password validation.
+// http://odetocode.com/blogs/scott/archive/2014/10/13/confirm-password-validation-in-angularjs.aspx
+fantasyControllers.directive("compareTo", function() {
+  return {
+    require: "ngModel",
+    scope: {
+      otherModelValue: "=compareTo"
+    },
+    link: function(scope, element, attributes, ngModel) {
+      ngModel.$validators.compareTo = function(modelValue) {
+        return modelValue == scope.otherModelValue;
+      };
+      scope.$watch("otherModelValue", function() {
+        ngModel.$validate();
+      });
+    }
+  };
+});
+
+fantasyControllers.controller('defaultController', ['$scope', 'userInfo', 'alertService', 
+  function ($scope, userInfo, alertService) {
     $scope.userInfo = userInfo;
+    $scope.alerts = alertService.get();
 }]);
 
 fantasyControllers.controller('leagueController', ['$scope', '$http', '$routeParams', 'userInfo',
@@ -52,15 +124,18 @@ fantasyControllers.controller('homeController', ['$scope', '$http', '$routeParam
       });
 }]);
 
-fantasyControllers.controller('loginController', ['$scope', '$http', '$location', 'userInfo',
-  function ($scope, $http, $location, userInfo) {
+fantasyControllers.controller('loginController', ['$scope', '$http', '$location', 'userInfo', 'alertService', 
+  function ($scope, $http, $location, userInfo, alertService) {
     $scope.loginResult = "";
-    $scope.login = function(){
+    $scope.loginCredentials = {};
+    $scope.newAccount = {};
+    $scope.login = function() {
       $http.post('/api/login', JSON.stringify($scope.loginCredentials))
         .then(function(response) {
-          if(response.data == "null"){
-            $scope.loginResult = "Login Failed";
+          if(response.data == null){
+            alertService.add("danger", "Login Failed");
           }else{
+            alertService.clear();
             userInfo.playerId = response.data.pid;
             userInfo.username = response.data.username;
             $location.path('/home/' + response.data.pid); 
@@ -69,7 +144,27 @@ fantasyControllers.controller('loginController', ['$scope', '$http', '$location'
         function(data) {
           console.log('Error: ' + data);
         });
-    }
+    };
+    $scope.createAccount = function(isValid) {
+      if (isValid) {
+        $http.post('/api/addPlayer', JSON.stringify($scope.newAccount))
+          .then(function(response) {
+            if(response.data == null){
+              alertService.add("danger", "Could not create account");
+            }else{
+              alertService.clear();
+              userInfo.playerId = response.data.pid;
+              userInfo.username = response.data.username;
+              $location.path('/home/' + response.data.pid); 
+            }
+          },
+          function(data) {
+            console.log('Error: ' + data);
+          });
+      } else {
+        alertService.add("danger", "Please correct the errors below.");
+      }
+    };
 }]);
 
 fantasyControllers.controller('teamController', ['$scope', '$http', '$routeParams', 'userInfo',
@@ -286,7 +381,8 @@ fantasyControllers.controller('manageLeagueController', ['$scope', '$http', '$ro
 
 var fantasyApp = angular.module('fantasyApp', [
   'ngRoute',
-  'fantasyControllers'
+  'fantasyControllers',
+  'ui.bootstrap'
 ]);
 
 fantasyApp.config(['$routeProvider',

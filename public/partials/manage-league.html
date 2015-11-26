@@ -1,110 +1,106 @@
-<div class="container">
+<!-- HEADER AND TEAM COUNT -->
+<div class="jumbotron text-center">
+  <h1>There are <span ng-cloak class="label label-info">{{ leagueDrafts.length }}</span> drafted rules in this league. </h1>
+</div>
 
-  <!-- HEADER AND TEAM COUNT -->
-  <div class="jumbotron text-center">
-    <h1>There are <span ng-cloak class="label label-info">{{ leagueDrafts.length }}</span> drafted rules in this league. </h1>
-  </div>
-  
-  <div class="col-md-12">
-    <table class="table table-bordered table-hover">
-      <thead>
-        <tr>
-          <th>Actor</th>
-          <th>Action</th>
-          <th>Fulfilled Count</th>
-          <th>Points</th>
-          <th>Options</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- LOOP OVER THE DRAFTS IN $scope.selectedDrafts -->
-        <tr ng-cloak ng-repeat="draft in leagueDrafts">
-          <td>
-            {{ draft.actor }}
-          </td>
-          <td>
-            {{ draft.action }}
-          </td>
-          <td>
-            {{ draft.fulfilled }}
-          </td>
-          <td>
-            {{ draft.points }}
-          </td>
-          <td>
-            <button ng-click="increment($index);" type="button" class="btn btn-default">Increment</button>
-            <button ng-click="decrement($index);"type="button" class="btn btn-default">Decrement</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  
-  <div class="col-md-6">
-    <table class="table table-bordered table-hover">
-      <thead>
-        <tr>
-          <th>Actor</th>
-          <th>Options</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- LOOP OVER THE DRAFTS IN $scope.selectedDrafts -->
-        <tr ng-cloak ng-repeat="actor in actors">
-          <td>
-            {{ actor.description }}
-          </td>
-          <td>
-            <button ng-click="removeActor($index);" type="button" class="btn btn-default">Remove</button>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <input ng-model="newActor.description" type="text" id="newActorDescription" class="form-control" name="newActorDescription" placeholder="Description" required="" autofocus="" />
-          </td>
-          <td>
-            <button ng-click="addActor();" type="button" class="btn btn-default">Add</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  
-  <div class="col-md-6">
-    <table class="table table-bordered table-hover">
-      <thead>
-        <tr>
-          <th>Actions</th>
-          <th>Points</th>
-          <th>Options</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- LOOP OVER THE DRAFTS IN $scope.selectedDrafts -->
-        <tr ng-cloak ng-repeat="action in actions">
-          <td>
-            {{ action.description }}
-          </td>
-          <td>
-            {{ action.points }}
-          </td>
-          <td>
-            <button ng-click="removeAction($index);" type="button" class="btn btn-default">Remove</button>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <input ng-model="newAction.description" type="text" id="newActionDescription" class="form-control" name="newActionDescription" placeholder="Description" required="" autofocus="" />
-          </td>
-          <td>
-            <input ng-model="newAction.points" type="text" id="newActionPoints" class="form-control" name="newActionPoints" placeholder="Points" required="" autofocus="" />
-          </td>
-          <td>
-            <button ng-click="addAction();" type="button" class="btn btn-default">Add</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  
+<div class="col-md-12">
+  <table class="table table-bordered table-hover">
+    <thead>
+      <tr>
+        <th>Actor</th>
+        <th>Action</th>
+        <th>Fulfilled Count</th>
+        <th>Points</th>
+        <th>Options</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- LOOP OVER THE DRAFTS IN $scope.selectedDrafts -->
+      <tr ng-cloak ng-repeat="draft in leagueDrafts">
+        <td>
+          {{ draft.actor }}
+        </td>
+        <td>
+          {{ draft.action }}
+        </td>
+        <td>
+          {{ draft.fulfilled }}
+        </td>
+        <td>
+          {{ draft.points }}
+        </td>
+        <td>
+          <button ng-click="increment($index);" type="button" class="btn btn-default">Increment</button>
+          <button ng-click="decrement($index);"type="button" class="btn btn-default">Decrement</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="col-md-6">
+  <table class="table table-bordered table-hover">
+    <thead>
+      <tr>
+        <th>Actor</th>
+        <th>Options</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- LOOP OVER THE DRAFTS IN $scope.selectedDrafts -->
+      <tr ng-cloak ng-repeat="actor in actors">
+        <td>
+          {{ actor.description }}
+        </td>
+        <td>
+          <button ng-click="removeActor($index);" type="button" class="btn btn-default">Remove</button>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <input ng-model="newActor.description" type="text" id="newActorDescription" class="form-control" name="newActorDescription" placeholder="Description" required="" autofocus="" />
+        </td>
+        <td>
+          <button ng-click="addActor();" type="button" class="btn btn-default">Add</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="col-md-6">
+  <table class="table table-bordered table-hover">
+    <thead>
+      <tr>
+        <th>Actions</th>
+        <th>Points</th>
+        <th>Options</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- LOOP OVER THE DRAFTS IN $scope.selectedDrafts -->
+      <tr ng-cloak ng-repeat="action in actions">
+        <td>
+          {{ action.description }}
+        </td>
+        <td>
+          {{ action.points }}
+        </td>
+        <td>
+          <button ng-click="removeAction($index);" type="button" class="btn btn-default">Remove</button>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <input ng-model="newAction.description" type="text" id="newActionDescription" class="form-control" name="newActionDescription" placeholder="Description" required="" autofocus="" />
+        </td>
+        <td>
+          <input ng-model="newAction.points" type="text" id="newActionPoints" class="form-control" name="newActionPoints" placeholder="Points" required="" autofocus="" />
+        </td>
+        <td>
+          <button ng-click="addAction();" type="button" class="btn btn-default">Add</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 </div>

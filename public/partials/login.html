@@ -1,13 +1,55 @@
 <link rel="stylesheet" href="./css/login.css">
-<div class="container">
-  <div class="col-md-4">
-    <div><h1>{{loginResult}}</h1></div>   
-    <form ng-submit="login()" id="login-form" class="form-login" >
-      <h2 class="form-login-heading">Please log in</h2>
-      <input ng-model="loginCredentials.username" type="text" id="username" class="form-control" name="username" placeholder="Username" required="" autofocus="" />
-      <input ng-model="loginCredentials.password" type="password" id="password" class="form-control" name="password" placeholder="Password" required=""/>      
-      <br />
-      <button class="btn btn-lg btn-primary btn-block" type="submit">Login</button>   
-    </form>
+
+<div class="col-md-4">
+  <div class="well">
+    <uib-tabset>
+      <uib-tab heading="Login">
+        <div id="loginTab" class="tab-pane in active" >
+          <form ng-submit="login()">
+            <div class="form-group">
+              <label class="control-label" >Username</label>
+              <input ng-model="loginCredentials.username" type="text" id="username" class="form-control">
+            </div>
+            <div class="form-group">
+              <label class="control-label" >Password</label>
+              <input ng-model="loginCredentials.password" type="password" id="password" class="form-control">
+            </div>
+            <div class="form-group">
+              <button class="btn btn-success" type="submit">Login</button>
+            </div>
+          </form>
+        </div>
+      </uib-tab>
+      <uib-tab heading="Create Account">
+        <div id="createTab" class="tab-pane" >
+          <form ng-submit="createAccount(createForm.$valid)" novalidate name="createForm">
+            <div class="form-group">
+              <label class="control-label" >Username</label>
+              <input ng-minlength="5" ng-maxlength="50" required ng-model="newAccount.username" type="text" name="newUsername" id="newUsername" class="form-control" />
+              <div ng-messages="createForm.newUsername.$error" ng-messages-include="partials/messages.html"></div>
+            </div>
+            <div class="form-group">
+              <label class="control-label" >Email</label>
+              <input ng-maxlength="50" required ng-model="newAccount.email" type="text" name="newEmail" id="newEmail" class="form-control" />
+              <div ng-messages="createForm.newEmail.$error" ng-messages-include="partials/messages.html"></div>
+            </div>
+            <div class="form-group">
+              <label class="control-label" >Password</label>
+              <input ng-minlength="5" ng-maxlength="50" required ng-model="newAccount.password" type="password" name="newPassword" id="newPassword" class="form-control" />
+              <div ng-messages="createForm.newPassword.$error" ng-messages-include="partials/messages.html"></div>
+            </div>
+            <div class="form-group">
+              <label class="control-label" >Confirm Password</label>
+              <input ng-model="newAccount.confirmPassword" required type="password" name="confirmPassword" id="confirmPassword" class="form-control" compare-to="newAccount.password" />
+              <div ng-messages="createForm.confirmPassword.$error" ng-messages-include="partials/messages.html"></div>
+            </div>
+            
+            <div class="form-group">
+              <button class="btn btn-primary">Create Account</button>
+            </div>
+          </form>
+        </div>
+      </uib-tab>
+    </uib-tabset>
   </div>
 </div>
