@@ -37,7 +37,7 @@
   <nav class="navbar navbar-default navbar-fixed-top">
     <div ng-controller="defaultController" class="container">
       <div class="navbar-header">
-        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+        <button type="button" class="navbar-toggle" ng-init="navCollapsed = true" ng-click="navCollapsed = !navCollapsed">
           <span class="sr-only">Toggle navigation</span>
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
@@ -45,7 +45,7 @@
         </button>
         <a class="navbar-brand" href="#/home/{{ userInfo.playerId }}">Fantasy Everything</a>
       </div>
-      <div id="navbar" class="navbar-collapse collapse">
+      <div class="navbar-collapse collapse" collapse="navCollapsed">
         <ul class="nav navbar-nav">
           <li class="active"><a href="#/home/{{ userInfo.playerId }}">Home</a></li>
         </ul>
