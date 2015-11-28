@@ -14,6 +14,31 @@ app.use(bodyParser.json());                                     // parse applica
 app.use(bodyParser.json({ type: 'application/vnd.api+json' })); // parse application/vnd.api+json as json
 app.use(methodOverride());
 
+var sanitize = function (str) {
+  return str.replace(/[\0\x08\x09\x1a\n\r"'\\\%]/g, function (char) {
+    switch (char) {
+      case "\0":
+        return "\\0";
+      case "\x08":
+        return "\\b";
+      case "\x09":
+        return "\\t";
+      case "\x1a":
+        return "\\z";
+      case "\n":
+        return "\\n";
+      case "\r":
+        return "\\r";
+      case "\"":
+      case "'":
+      case "\\":
+      case "%":
+        return "\\"+char; // prepends a backslash to backslash, percent,
+                          // and double/single quotes
+    }
+  });
+}
+
 var pool  = mysql.createPool({
   connectionLimit : 100,
   host     : 'localhost',
@@ -110,6 +135,28 @@ app.get('/api/getLeaguesByPlayer/:playerId', function(req, res) {
   simpleQuery(queryString, res);
 });
 
+app.get('/api/getAvailableLeaguesByPlayer/:playerId', function(req, res) {
+  var playerId = req.params.playerId;
+  var queryString = 
+    'SELECT f_league.lid,' +
+    '       f_league.description,' +
+    '       player.username AS owner,' +
+    '       player.pid AS owner_id,' +
+    '       COUNT(f_team.tid) AS num_teams' +
+    '  FROM f_league' +
+    '  JOIN f_team' +
+    '    ON f_league.lid = f_team.lid' +
+    '  LEFT JOIN player' +
+    '    ON f_league.owner_id = player.pid' +
+    ' WHERE f_league.active = 1 AND' +
+    '       f_league.lid NOT IN (' +
+    '    SELECT DISTINCT f_team.lid ' +
+    '      FROM f_team' +
+    '     WHERE f_team.player_id = ' + playerId + ')' +
+    ' GROUP BY f_league.lid;';
+  simpleQuery(queryString, res);
+});
+
 app.get('/api/getLeagueOwner/:leagueId', function(req, res) {
   var leagueId = req.params.leagueId;
   var queryString = 
@@ -129,12 +176,12 @@ app.get('/api/getTeamOwner/:teamId', function(req, res) {
 });
 
 app.post('/api/login', function(req, res){
-  var loginObj = req.body;
+  var obj = req.body;
   var queryString = 
     'SELECT pid, username' +
     '  FROM player ' + 
-    ' WHERE username = \'' + loginObj.username + '\'' +
-    '   AND password = \'' + loginObj.password + '\';';
+    ' WHERE username = \'' + sanitize(obj.username) + '\'' +
+    '   AND password = \'' + sanitize(obj.password) + '\';';
   singleRowQuery(queryString, res);
 });
 
@@ -268,18 +315,18 @@ app.post('/api/addActor', function(req, res){
   var obj = req.body;
   var queryString =
     'INSERT INTO actor(description, f_league_id, managed_actor_id)' +
-    'VALUES (\'' + obj.description + '\', ' + obj.leagueId + ', ' + obj.managedActorId + ');';
+    'VALUES (\'' + sanitize(obj.description) + '\', ' + obj.leagueId + ', ' + obj.managedActorId + ');';
   getConnection(function(connection) {
-    connection.query(queryString, function(err, rows, fields) {
+    connection.query(queryString, function(err, result, fields) {
       if (err){
         console.log("Query error: " + err);
         res.json(null);
       } else {
-        if(rows.affectedRows > 0){
+        if(result.affectedRows > 0){
           var queryString = 
             'SELECT *' +
             '  FROM actor' +
-            ' WHERE actor.actor_id = ' + rows.insertId;
+            ' WHERE actor.actor_id = ' + result.insertId;
           singleRowQuery(queryString, res);
         } else {
           res.json(null);
@@ -303,18 +350,18 @@ app.post('/api/addAction', function(req, res){
   var obj = req.body;
   var queryString =
     'INSERT INTO action(description, points, f_league_id, managed_action_id)' +
-    'VALUES (\'' + obj.description + '\', ' + obj.points + ', ' + obj.leagueId + ', ' + obj.managedActionId + ');';
+    'VALUES (\'' + sanitize(obj.description) + '\', ' + obj.points + ', ' + obj.leagueId + ', ' + obj.managedActionId + ');';
   getConnection(function(connection) {
-    connection.query(queryString, function(err, rows, fields) {
+    connection.query(queryString, function(err, result, fields) {
       if (err){
         console.log("Query error: " + err);
         res.json(null)
       } else {
-        if(rows.affectedRows > 0){
+        if(result.affectedRows > 0){
           var queryString = 
             'SELECT *' +
             '  FROM action' +
-            ' WHERE action.action_id = ' + rows.insertId;
+            ' WHERE action.action_id = ' + result.insertId;
           singleRowQuery(queryString, res);
         } else {
           res.json(null);
@@ -337,22 +384,84 @@ app.post('/api/addPlayer', function(req, res){
   var obj = req.body;
   var queryString =
     'INSERT INTO player(username, password, email)' +
-    'VALUES (\'' + obj.username + '\', \'' + obj.password + '\', \'' + obj.email + '\');';
+    'VALUES (\'' + sanitize(obj.username) + '\', \'' + sanitize(obj.password) + '\', \'' + sanitize(obj.email) + '\');';
   getConnection(function(connection) {
-    connection.query(queryString, function(err, rows, fields) {
+    connection.query(queryString, function(err, result, fields) {
       if (err){
         console.log("Query error: " + err);
-      }
-      if(rows.affectedRows > 0){
-        var queryString = 
-          'SELECT *' +
-          '  FROM player' +
-          ' WHERE player.pid = ' + rows.insertId;
-        singleRowQuery(queryString, res);
       } else {
-        res.json(null);
+        if(result.affectedRows > 0){
+          var queryString = 
+            'SELECT *' +
+            '  FROM player' +
+            ' WHERE player.pid = ' + result.insertId;
+          singleRowQuery(queryString, res);
+        } else {
+          res.json(null);
+        }
       }
-      
+      connection.release
+    });
+  });
+});
+
+app.post('/api/addTeam', function(req, res){
+  var obj = req.body;
+  var queryString =
+    'INSERT INTO f_team(team_name, player_id, lid)' +
+    'VALUES (\'' + sanitize(obj.teamName) + '\', ' + obj.playerId + ', ' + obj.leagueId + ');';
+  getConnection(function(connection) {
+    connection.query(queryString, function(err, result, fields) {
+      if (err){
+        console.log("Query error: " + err);
+        res.json(null)
+      } else {
+        if(result.affectedRows > 0){
+          var queryString = 
+            'SELECT *' +
+            '  FROM f_team' +
+            ' WHERE f_team.tid = ' + result.insertId;
+          singleRowQuery(queryString, res);
+        } else {
+          res.json(null);
+        }
+      }
+      connection.release
+    });
+  });
+});
+
+app.post('/api/addLeague', function(req, res){
+  var obj = req.body;
+  var queryString =
+    'INSERT INTO f_league(description, active, owner_id)' +
+    'VALUES (\'' + sanitize(obj.leagueName) + '\', 1, ' + obj.ownerId + ');';
+  getConnection(function(connection) {
+    connection.query(queryString, function(err, result, fields) {
+      if (err){
+        console.log("Query error: " + err);
+        res.json(null)
+      } else {
+        if(result.affectedRows > 0){
+          var queryString = 
+            'INSERT INTO f_team(team_name, player_id, lid)' +
+            'VALUES (\'' + sanitize(obj.teamName) + '\', ' + obj.ownerId + ', ' + result.insertId + ');';
+          connection.query(queryString, function(err, result, fields) {
+            if (err) {
+              console.log("Query error: " + err);
+              res.json(null)
+            } else {
+              var queryString =
+                'SELECT *' +
+                '  FROM f_team' +
+                ' WHERE f_team.tid = ' + result.insertId + ';';
+              singleRowQuery(queryString, res);
+            }
+          });
+        } else {
+          res.json(null);
+        }
+      }
       connection.release
     });
   });

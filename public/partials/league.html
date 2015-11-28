@@ -5,6 +5,9 @@
     
     
 <!-- TEAM LIST -->
+<a ng-href="#/manageLeague/{{leagueId}}" ng-show="isOwner">
+  <button type="button" class="btn btn-default">Manage League</button>
+</a>
 <table class="table table-bordered table-hover">
   <thead>
     <tr>
@@ -28,6 +31,3 @@
     </tr>
   </tbody>
 </table>
-<a href="#/manageLeague/{{leagueId}}" ng-show="isOwner">
-  <button type="button" class="btn btn-default">Manage League</button>
-</a>

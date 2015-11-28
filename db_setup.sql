@@ -9,66 +9,69 @@ v_f_team;
 
 CREATE TABLE player
 (
-	pid 				INTEGER 		AUTO_INCREMENT PRIMARY KEY,
-	username 			VARCHAR(50)		NOT NULL UNIQUE,
-	password 			VARCHAR(50)		NOT NULL,
-	email 				VARCHAR(50)		NOT NULL
+  pid           INTEGER       AUTO_INCREMENT PRIMARY KEY,
+  username      VARCHAR(50)   NOT NULL UNIQUE,
+  password      VARCHAR(50)   NOT NULL,
+  email         VARCHAR(50)   NOT NULL
 );
 CREATE TABLE f_league
 (
-	lid 				INTEGER 		AUTO_INCREMENT PRIMARY KEY,
-	description 		TEXT			NULL,
-	active				TINYINT(1)		,
-	owner_id			INTEGER			NOT NULL REFERENCES player(pid)
+  lid           INTEGER       AUTO_INCREMENT PRIMARY KEY,
+  description   VARCHAR(100)  NOT NULL UNIQUE,
+  active        TINYINT(1)    NOT NULL DEFAULT 1,
+  owner_id      INTEGER       NOT NULL REFERENCES player(pid)
 );
 CREATE TABLE f_team
 (
-	tid 				INTEGER 		AUTO_INCREMENT PRIMARY KEY,
-	team_name 			VARCHAR(100)	NOT NULL,
-	player_id 			INTEGER			REFERENCES player(pid),
-	lid 				INTEGER			NOT NULL REFERENCES f_league(lid)
+  tid           INTEGER       AUTO_INCREMENT PRIMARY KEY,
+  team_name     VARCHAR(100)  NOT NULL UNIQUE,
+  player_id     INTEGER       NOT NULL REFERENCES player(pid),
+  lid           INTEGER       NOT NULL REFERENCES f_league(lid)
 );
 CREATE TABLE managed_actor
 (
-	m_actor_id 			INTEGER			AUTO_INCREMENT PRIMARY KEY,
-	description 		TEXT			NULL
+  m_actor_id    INTEGER       AUTO_INCREMENT PRIMARY KEY,
+  description   VARCHAR(100)  NOT NULL UNIQUE
 );
 CREATE TABLE managed_action
 (
-	m_action_id 		INTEGER		AUTO_INCREMENT PRIMARY KEY,
-	description 		TEXT		NULL,
-	points 				DECIMAL		
+  m_action_id   INTEGER       AUTO_INCREMENT PRIMARY KEY,
+  description   VARCHAR(100)  NOT NULL UNIQUE,
+  points        DECIMAL       NOT NULL
 );
 CREATE TABLE actor
 (
-	actor_id			INTEGER		AUTO_INCREMENT PRIMARY KEY,
-	description			TEXT		NULL,
-	f_league_id			INTEGER		REFERENCES f_league(lid),
-	managed_actor_id 	INTEGER		REFERENCES managed_actor(m_actor_id)
+  actor_id      INTEGER       AUTO_INCREMENT PRIMARY KEY,
+  description   VARCHAR(100)  NULL,
+  f_league_id   INTEGER       NOT NULL REFERENCES f_league(lid),
+  managed_actor_id  INTEGER   NULL REFERENCES managed_actor(m_actor_id),
+  UNIQUE (description, f_league_id)
 );
 CREATE TABLE action 
 (
-	action_id			INTEGER		AUTO_INCREMENT PRIMARY KEY,
-	description 		TEXT		NULL,
-	points				DECIMAL		,
-	f_league_id 		INTEGER		REFERENCES f_league(lid),
-	managed_action_id 	INTEGER		REFERENCES managed_action(m_action_id)
+  action_id     INTEGER       AUTO_INCREMENT PRIMARY KEY,
+  description   VARCHAR(100)  NULL,
+  points        DECIMAL       NOT NULL,
+  f_league_id   INTEGER       NOT NULL REFERENCES f_league(lid),
+  managed_action_id INTEGER   NULL REFERENCES managed_action(m_action_id),
+  UNIQUE (description, f_league_id)
 );
 CREATE TABLE managed_rule
 (
-	m_rid 				INTEGER		AUTO_INCREMENT PRIMARY KEY,
-	managed_actor_id 	INTEGER		REFERENCES managed_actor(m_actor_id),
-	managed_action_id 	INTEGER		REFERENCES managed_action(m_action_id),
-	fulfilled 			INTEGER
+  m_rid         INTEGER       AUTO_INCREMENT PRIMARY KEY,
+  managed_actor_id  INTEGER   NOT NULL REFERENCES managed_actor(m_actor_id),
+  managed_action_id INTEGER   NOT NULL REFERENCES managed_action(m_action_id),
+  fulfilled     INTEGER       NOT NULL,
+  UNIQUE (managed_actor_id, managed_action_id)
 );
 CREATE TABLE drafted_rule
 (
-	participated_id		INTEGER		AUTO_INCREMENT PRIMARY KEY,
-	actor_id 			    INTEGER		NOT NULL REFERENCES actor(actor_id),
-	action_id 			  INTEGER		NOT NULL REFERENCES action(action_id),
-	fulfilled 			INTEGER		,
-	managed_rule_id 	INTEGER		REFERENCES managed_rule(m_rid),
-  f_team_id       INTEGER   REFERENCES f_team(tid),
+  participated_id INTEGER     AUTO_INCREMENT PRIMARY KEY,
+  actor_id      INTEGER       NOT NULL REFERENCES actor(actor_id),
+  action_id     INTEGER       NOT NULL REFERENCES action(action_id),
+  fulfilled     INTEGER       NOT NULL,
+  managed_rule_id INTEGER     NULL REFERENCES managed_rule(m_rid),
+  f_team_id     INTEGER       NOT NULL REFERENCES f_team(tid),
   UNIQUE (actor_id, action_id)
 );
 CREATE VIEW v_f_team AS

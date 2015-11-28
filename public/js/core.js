@@ -1,5 +1,5 @@
 // declare a module
-var fantasyControllers = angular.module('fantasyControllers', ["ngMessages"]);
+var fantasyControllers = angular.module('fantasyControllers', ['ngMessages']);
 
 fantasyControllers.factory('userInfo', function() {
   var userInfo = {
@@ -48,19 +48,6 @@ fantasyControllers.factory('alertService', function() {
     return alerts;
   }
 });
-
-// A silly hacky way of getting bootstrap tabs to work.
-/*fantasyControllers.directive('showTab', function () {
-  return {
-    link: function (scope, element, attrs) {
-      var $elm = angular.element(element);
-      element.bind('click', function(event) {
-        event.preventDefault();
-        $(element).tab('show');
-      });
-    }
-  };
-});*/
  
 // for password validation.
 // http://odetocode.com/blogs/scott/archive/2014/10/13/confirm-password-validation-in-angularjs.aspx
@@ -81,8 +68,8 @@ fantasyControllers.directive("compareTo", function() {
   };
 });
 
-fantasyControllers.controller('defaultController', ['$scope', 'userInfo', 'alertService', 
-  function ($scope, userInfo, alertService) {
+fantasyControllers.controller('defaultController', ['$scope', '$rootScope', 'userInfo', 'alertService', 
+  function ($scope, $rootScope, userInfo, alertService) {
     $scope.userInfo = userInfo;
     $scope.alerts = alertService.get();
 }]);
@@ -92,8 +79,9 @@ fantasyControllers.controller('leagueController', ['$scope', '$http', '$routePar
     // when landing on the page, get all teams for the given league and show them
     $scope.teams = [];
     $scope.isOwner = false;
-    $scope.leagueId = $routeParams.leagueid;
-    $http.get('/api/getTeamsByLeague/' + $routeParams.leagueid)
+    $scope.leagueId = $routeParams.leagueId;
+    
+    $http.get('/api/getTeamsByLeague/' + $routeParams.leagueId)
       .then(function(response) {
         $scope.teams = response.data;
       },
@@ -101,9 +89,9 @@ fantasyControllers.controller('leagueController', ['$scope', '$http', '$routePar
         console.log('Error: ' + response.data);
       });
       
-    $http.get('/api/getLeagueOwner/' + $routeParams.leagueid)
+    $http.get('/api/getLeagueOwner/' + $routeParams.leagueId)
       .then(function(response) {
-        if (response.data != "null") {
+        if (response.data != null) {
           $scope.isOwner = (userInfo.playerId === response.data.owner_id);
         }
       },
@@ -112,16 +100,53 @@ fantasyControllers.controller('leagueController', ['$scope', '$http', '$routePar
       });
 }]);
 
-fantasyControllers.controller('homeController', ['$scope', '$http', '$routeParams', 
-  function ($scope, $http, $routeParams) {
+fantasyControllers.controller('homeController', ['$scope', '$http', '$routeParams', '$location', '$uibModal', 'userInfo', 
+  function ($scope, $http, $routeParams, $location, $uibModal, userInfo) {
     // when landing on the page, get all leagues for the given player and show them
-    $http.get('/api/getLeaguesByPlayer/' + $routeParams.playerid)
+    $http.get('/api/getLeaguesByPlayer/' + $routeParams.playerId)
       .then(function(response) {
         $scope.leagues = response.data;
       },
       function(response) {
         console.log('Error: ' + response.data);
       });
+      
+    $scope.joinLeague = function() {
+      if (userInfo.playerId > 0) {
+        $location.path('/joinLeague/'); 
+      }
+    }
+    
+    $scope.createLeague = function() {
+      if (userInfo.playerId <= 0) {
+        return; 
+      }
+      var modalInstance = $uibModal.open({
+        animation: true,
+        templateUrl: 'partials/create-league-modal.html',
+        controller: 'createLeagueModalController',
+        resolve: {
+          newLeague: {
+            teamName : null,
+            leagueName : null,
+            ownerId : userInfo.playerId
+          }
+        }
+      });
+
+      modalInstance.result.then(function (newLeague) {
+        $scope.newLeague = newLeague;
+        $http.post('/api/addLeague/', JSON.stringify(newLeague))
+          .then(function(response) {
+            $location.path('/manageLeague/' + response.data.lid);
+          },
+          function(response) {
+            console.log('Error: ' + response.data);
+          });
+      }, function () {
+        console.log('Modal dismissed at: ' + new Date());
+      });
+    }
 }]);
 
 fantasyControllers.controller('loginController', ['$scope', '$http', '$location', 'userInfo', 'alertService', 
@@ -174,7 +199,7 @@ fantasyControllers.controller('teamController', ['$scope', '$http', '$routeParam
     $scope.isOwner = false;
     
     // when landing on the page, get all drafts for the given team and show them
-    $http.get('/api/getDraftsByTeam/' + $routeParams.teamid)
+    $http.get('/api/getDraftsByTeam/' + $routeParams.teamId)
       .then(function(response) {
         $scope.selectedDrafts = response.data;
       },
@@ -182,7 +207,7 @@ fantasyControllers.controller('teamController', ['$scope', '$http', '$routeParam
         console.log('Error: ' + response.data);
       });
       
-    $http.get('/api/getTeamOwner/' + $routeParams.teamid)
+    $http.get('/api/getTeamOwner/' + $routeParams.teamId)
       .then(function(response) {
         $scope.isOwner = (response.data.player_id === userInfo.playerId);
       },
@@ -192,7 +217,7 @@ fantasyControllers.controller('teamController', ['$scope', '$http', '$routeParam
 
     $scope.load = function(show) {
       if (show) {
-        $http.get('/api/getAvailablePicksByTeam/' + $routeParams.teamid)
+        $http.get('/api/getAvailablePicksByTeam/' + $routeParams.teamId)
           .then(function(response) {
             $scope.availableDrafts = response.data;
           },
@@ -206,7 +231,7 @@ fantasyControllers.controller('teamController', ['$scope', '$http', '$routeParam
       $http.post('/api/addDraftedRule', JSON.stringify({
           action : action, 
           actor : actor, 
-          team : $routeParams.teamid
+          team : $routeParams.teamId
         }))
         .then(function(response) {
           if (response.data.affectedRows > 0) {
@@ -236,7 +261,7 @@ fantasyControllers.controller('teamController', ['$scope', '$http', '$routeParam
       $http.post('/api/removeDraftedRule', JSON.stringify({
           action : action, 
           actor : actor, 
-          team : $routeParams.teamid
+          team : $routeParams.teamId
         }))
         .then(function(response) {
           if (response.data.affectedRows > 0) {
@@ -338,7 +363,7 @@ fantasyControllers.controller('manageLeagueController', ['$scope', '$http', '$ro
         managedActorId : null
       }))
         .then(function(response) {
-          if (response.data != "null") {
+          if (response.data != null) {
             $scope.actors.push(response.data);
           }
         },
@@ -379,8 +404,76 @@ fantasyControllers.controller('manageLeagueController', ['$scope', '$http', '$ro
     }
 }]);
 
+fantasyControllers.controller('joinLeagueController', ['$scope', '$http', '$location', '$uibModal', 'userInfo',
+  function ($scope, $http, $location, $uibModal, userInfo) {
+    $scope.userInfo = userInfo;
+    // when landing on the page, get all leagues for the given player and show them
+    $http.get('/api/getAvailableLeaguesByPlayer/' + userInfo.playerId)
+      .then(function(response) {
+        $scope.leagues = response.data;
+      },
+      function(response) {
+        console.log('Error: ' + response.data);
+      });
+    $scope.joinLeague = function(index) {
+      var modalInstance = $uibModal.open({
+        animation: true,
+        templateUrl: 'partials/create-team-modal.html',
+        controller: 'createTeamModalController',
+        resolve: {
+          newTeam: {
+            teamName : null,
+            leagueName : $scope.leagues[index].description,
+            leagueId : $scope.leagues[index].lid,
+            playerId : userInfo.playerId
+          }
+        }
+      });
+
+      modalInstance.result.then(function (newTeam) {
+        $scope.newTeam = newTeam;
+        $http.post('/api/addTeam/', JSON.stringify(newTeam))
+          .then(function(response) {
+            $location.path('/team/' + response.data.tid);
+          },
+          function(response) {
+            console.log('Error: ' + response.data);
+          });
+      }, function () {
+        console.log('Modal dismissed at: ' + new Date());
+      });
+    }
+}]);
+
+fantasyControllers.controller('createTeamModalController', ['$scope', '$uibModalInstance', 'newTeam',
+  function ($scope, $uibModalInstance, newTeam) {
+    $scope.newTeam = newTeam;
+
+    $scope.ok = function () {
+      $uibModalInstance.close($scope.newTeam);
+    };
+
+    $scope.cancel = function () {
+      $uibModalInstance.dismiss('cancel');
+    };
+}]);
+
+fantasyControllers.controller('createLeagueModalController', ['$scope', '$uibModalInstance', 'newLeague',
+  function ($scope, $uibModalInstance, newLeague) {
+    $scope.newLeague = newLeague;
+
+    $scope.ok = function () {
+      $uibModalInstance.close($scope.newLeague);
+    };
+
+    $scope.cancel = function () {
+      $uibModalInstance.dismiss('cancel');
+    };
+}]);
+
 var fantasyApp = angular.module('fantasyApp', [
   'ngRoute',
+  'ngAnimate',
   'fantasyControllers',
   'ui.bootstrap'
 ]);
@@ -388,19 +481,23 @@ var fantasyApp = angular.module('fantasyApp', [
 fantasyApp.config(['$routeProvider',
   function($routeProvider) {
     $routeProvider.
+      when('/joinLeague/', {
+        templateUrl : 'partials/join-league.html',
+        controller : 'joinLeagueController'
+      }).
       when('/manageLeague/:leagueId', {
         templateUrl : 'partials/manage-league.html',
         controller : 'manageLeagueController'
       }).
-      when('/team/:teamid', {
+      when('/team/:teamId', {
         templateUrl : 'partials/team.html',
         controller : 'teamController'
       }).
-      when('/league/:leagueid', {
+      when('/league/:leagueId', {
         templateUrl : 'partials/league.html',
         controller : 'leagueController'
       }).
-      when('/home/:playerid', {
+      when('/home/:playerId', {
         templateUrl : 'partials/home.html',
         controller : 'homeController'
       }).

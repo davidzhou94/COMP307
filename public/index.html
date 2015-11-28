@@ -14,12 +14,12 @@
   
   <!-- Various dependencies via CDN -->
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0/angular.js"></script>
-  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0/angular-route.js"></script>
-  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0/angular-messages.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0/angular-animate.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0/angular-route.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0/angular-messages.js"></script>  
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.js"></script>
-  <!--<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>-->
   
+  <!-- other dependencies -->
   <script src="js/ui-bootstrap-tpls-0.14.3.js"></script>
   
   <!-- Our app -->
@@ -34,8 +34,8 @@
 </head>
 <body ng-controller="defaultController">
   <!-- Fixed navbar -->
-  <nav class="navbar navbar-default navbar-fixed-top">
-    <div ng-controller="defaultController" class="container">
+  <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
       <div class="navbar-header">
         <button type="button" class="navbar-toggle" ng-init="navCollapsed = true" ng-click="navCollapsed = !navCollapsed">
           <span class="sr-only">Toggle navigation</span>
@@ -43,15 +43,15 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="#/home/{{ userInfo.playerId }}">Fantasy Everything</a>
+        <a class="navbar-brand" href="#/home/{{ userInfo.playerId }}" ng-click="navCollapsed = true">Fantasy Everything</a>
       </div>
-      <div class="navbar-collapse collapse" collapse="navCollapsed">
+      <div class="collapse navbar-collapse" collapse="navCollapsed">
         <ul class="nav navbar-nav">
-          <li class="active"><a href="#/home/{{ userInfo.playerId }}">Home</a></li>
+          <li class="active"><a href="#/home/{{ userInfo.playerId }}" ng-click="navCollapsed = true">Home</a></li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
-          <li ng-show="userInfo.username!=null"><a href="#">{{ userInfo.username}}'s Account</a></li>
-          <li><a href="#/login/">Log Out</a></li>
+          <li ng-show="userInfo.username!=null"><a href="#" ng-click="navCollapsed = true">{{ userInfo.username}}'s Account</a></li>
+          <li><a href="#/login/" ng-click="navCollapsed = true">Log Out</a></li>
         </ul>
       </div><!--/.nav-collapse -->
     </div>
