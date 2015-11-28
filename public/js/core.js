@@ -13,6 +13,7 @@ fantasyControllers.factory('userInfo', function() {
 fantasyControllers.factory('alertService', function() {
   var service = {
     add: add,
+    append: append,
     closeAlert: closeAlert,
     closeAlertIdx: closeAlertIdx,
     clear: clear,
@@ -22,7 +23,18 @@ fantasyControllers.factory('alertService', function() {
 
   return service;
 
+  function append(type, msg) {
+    return alerts.push({
+      type: type,
+      msg: msg,
+      close: function() {
+        return closeAlert(this);
+      }
+    });
+  }
+  
   function add(type, msg) {
+    alerts.length = 0;
     return alerts.push({
       type: type,
       msg: msg,
@@ -68,10 +80,13 @@ fantasyControllers.directive("compareTo", function() {
   };
 });
 
-fantasyControllers.controller('defaultController', ['$scope', '$rootScope', 'userInfo', 'alertService', 
-  function ($scope, $rootScope, userInfo, alertService) {
+fantasyControllers.controller('defaultController', ['$scope', '$route', 'userInfo', 'alertService', 
+  function ($scope, $route, userInfo, alertService) {
     $scope.userInfo = userInfo;
     $scope.alerts = alertService.get();
+    $scope.$on('$routeChangeStart', function(next, current) { 
+      alertService.clear();
+    });
 }]);
 
 fantasyControllers.controller('leagueController', ['$scope', '$http', '$routeParams', 'userInfo',
@@ -160,7 +175,6 @@ fantasyControllers.controller('loginController', ['$scope', '$http', '$location'
           if(response.data == null){
             alertService.add("danger", "Login Failed");
           }else{
-            alertService.clear();
             userInfo.playerId = response.data.pid;
             userInfo.username = response.data.username;
             $location.path('/home/' + response.data.pid); 
@@ -177,7 +191,6 @@ fantasyControllers.controller('loginController', ['$scope', '$http', '$location'
             if(response.data == null){
               alertService.add("danger", "Could not create account");
             }else{
-              alertService.clear();
               userInfo.playerId = response.data.pid;
               userInfo.username = response.data.username;
               $location.path('/home/' + response.data.pid); 
@@ -471,6 +484,53 @@ fantasyControllers.controller('createLeagueModalController', ['$scope', '$uibMod
     };
 }]);
 
+fantasyControllers.controller('accountController', ['$scope', '$http', 'userInfo', 'alertService',
+  function ($scope, $http, userInfo, alertService) {
+    var original = { };
+    $http.get('/api/getPlayer/' + userInfo.playerId)
+      .then(function(response) {
+        original = response.data;
+        $scope.modified = {
+          playerId : userInfo.playerId,
+          username : original.username,
+          email : original.email,
+          password : '',
+          confirmPassword : ''
+        }
+      },
+      function(response) {
+        console.log('Error: ' + response.data);
+      });
+
+    $scope.updateAccount = function (isValid) {
+      if (isValid) {
+        if ($scope.modified.email === original.email && 
+            $scope.modified.username === original.username &&
+            $scope.modified.password === '') {
+          alertService.add("info", "No changes were made");
+          return;
+        }
+        $http.post('/api/updatePlayer', JSON.stringify($scope.modified))
+          .then(function(response) {
+            if(response.data.affectedRows > 0){
+              alertService.add("success", "Account information updated");
+            }else{
+              alertService.add("danger", "Failed to update account information");
+              $scope.modified.email = original.email;
+              $scope.modified.username = original.username;
+              $scope.modified.password = '';
+              $scope.modified.confirmPassword = '';
+            }
+          },
+          function(data) {
+            console.log('Error: ' + data);
+          });
+      } else {
+        alertService.add("danger", "Please correct the errors below.");
+      }
+    }
+}]);
+
 var fantasyApp = angular.module('fantasyApp', [
   'ngRoute',
   'ngAnimate',
@@ -481,6 +541,10 @@ var fantasyApp = angular.module('fantasyApp', [
 fantasyApp.config(['$routeProvider',
   function($routeProvider) {
     $routeProvider.
+      when('/account/', {
+        templateUrl : 'partials/account.html',
+        controller : 'accountController'
+      }).
       when('/joinLeague/', {
         templateUrl : 'partials/join-league.html',
         controller : 'joinLeagueController'

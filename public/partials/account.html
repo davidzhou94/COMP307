@@ -1,0 +1,26 @@
+<div class="col-md-12">
+  <h1>Account Settings</h1>
+</div>
+<div class="col-md-6">
+  <form ng-submit="updateAccount(accountForm.$valid)" novalidate name="accountForm">
+    <div class="form-group">
+      <label class="control-label" >Username</label>
+      <input ng-model="modified.username" type="text" id="username" class="form-control">
+    </div>
+    <div class="form-group">
+      <label class="control-label" >Email</label>
+      <input ng-model="modified.email" type="text" id="email" class="form-control">
+    </div>
+    <div class="form-group">
+      <label class="control-label" >Change password</label>
+      <input ng-model="modified.password" type="password" id="email" class="form-control">
+    </div>
+    <div class="form-group">
+      <label class="control-label" >Confirm new password</label>
+      <input ng-model="modified.confirmPassword" type="password" id="email" class="form-control">
+    </div>
+    <div class="form-group">
+      <button class="btn btn-primary" type="submit">Save changes</button>
+    </div>
+  </form>
+</div>

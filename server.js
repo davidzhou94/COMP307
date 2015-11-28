@@ -175,6 +175,15 @@ app.get('/api/getTeamOwner/:teamId', function(req, res) {
   singleRowQuery(queryString, res);
 });
 
+app.get('/api/getPlayer/:playerId', function(req, res) {
+  var playerId = req.params.playerId;
+  var queryString = 
+    'SELECT pid, username, email' +
+    '  FROM player' + 
+    ' WHERE pid = ' + playerId + ';';
+  singleRowQuery(queryString, res);
+});
+
 app.post('/api/login', function(req, res){
   var obj = req.body;
   var queryString = 
@@ -389,6 +398,7 @@ app.post('/api/addPlayer', function(req, res){
     connection.query(queryString, function(err, result, fields) {
       if (err){
         console.log("Query error: " + err);
+        res.json(null);
       } else {
         if(result.affectedRows > 0){
           var queryString = 
@@ -467,13 +477,33 @@ app.post('/api/addLeague', function(req, res){
   });
 });
 
+app.post('/api/updatePlayer', function(req, res){
+  var obj = req.body;
+  var queryString;
+  if (obj.password === '') {
+    queryString =
+      'UPDATE player' +
+      '   SET username = \'' + sanitize(obj.username) + '\',' +
+      '       email = \'' + sanitize(obj.email) + '\'' +
+      ' WHERE pid = ' + obj.playerId + ';';
+  } else {
+    queryString =
+      'UPDATE player' +
+      '   SET username = \'' + sanitize(obj.username) + '\',' +
+      '       password = \'' + sanitize(obj.password) + '\',' +
+      '       email = \'' + sanitize(obj.email) + '\'' +
+      ' WHERE pid = ' + obj.playerId + ';';
+  }
+  simpleQuery(queryString, res);
+}); 
+
 app.get('*', function(req, res) {
   // load the single view file (angular will handle the page changes on the front-end)
   res.sendFile(path.join(__dirname, './public', 'index.html'));
 });
 
-var server = app.listen(80, function(){
-    console.log('Server Started at port 80');  
+var server = app.listen(8000, function(){
+    console.log('Server Started at port 8000');  
 });
 process.on('SIGTERM', function(){
     process.exit();
