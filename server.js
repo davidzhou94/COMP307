@@ -1,3 +1,5 @@
+var https = require('https');
+var fs = require('fs');
 var http = require('http');
 var express = require('express');
 var cookieSession = require('cookie-session');
@@ -639,9 +641,23 @@ app.get('*', function(req, res) {
   res.sendFile(path.join(__dirname, './public', 'index.html'));
 });
 
-var server = app.listen(8000, function(){
+var certsPath = path.join(__dirname, 'certs', 'server');
+
+// SSL Certificates
+var key = fs.readFileSync(path.join(certsPath, 'my-server.key.pem'));
+var cert = fs.readFileSync(path.join(certsPath, 'comp307_davidzhou_ca.crt'));
+
+var credentials = {key: key, cert: cert};
+
+http.createServer(app).listen(8000);
+console.log('Server Started at port 8000');
+
+https.createServer(credentials, app).listen(443);
+console.log('Secure Server Started at port 443');  
+
+/*var server = app.listen(8000, function(){
     console.log('Server Started at port 8000');  
-});
+});*/
 process.on('SIGTERM', function(){
     process.exit();
 });
