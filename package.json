@@ -13,9 +13,14 @@
   },
   "dependencies": {
     "express"         : "^4.13.3",
+    "cookie-session"  : "*",
+    "cookie-parser"   : "~1.4.0",
     "morgan"          : "~1.2.2",
     "body-parser"     : "~1.5.2",
     "method-override" : "~2.1.2",
-    "mysql"           : "*"
+    "mysql"           : "*",
+    "passport"        : "~0.3.2",
+    "passport-local"  : "~1.0.0",
+    "passport-facebook": "~2.0.0"
   }
 }

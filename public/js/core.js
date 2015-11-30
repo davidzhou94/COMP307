@@ -1,13 +1,21 @@
+'use strict';
+
 // declare a module
 var fantasyControllers = angular.module('fantasyControllers', ['ngMessages']);
 
-fantasyControllers.factory('userInfo', function() {
-  var userInfo = {
+fantasyControllers.factory('userService', function() {
+  var userService = {
     playerId : null,
     username : null,
+    clear : clear
   }
   
-  return userInfo;
+  function clear() {
+    userService.playerId = null;
+    userService.username = null;
+  }
+  
+  return userService;
 });
 
 fantasyControllers.factory('alertService', function() {
@@ -80,17 +88,24 @@ fantasyControllers.directive("compareTo", function() {
   };
 });
 
-fantasyControllers.controller('defaultController', ['$scope', '$route', 'userInfo', 'alertService', 
-  function ($scope, $route, userInfo, alertService) {
-    $scope.userInfo = userInfo;
+fantasyControllers.controller('defaultController', ['$scope', '$http', '$location', '$route', 'userService', 'alertService', 
+  function ($scope, $http, $location, $route, userService, alertService) {
+    $scope.userInfo = userService;
     $scope.alerts = alertService.get();
     $scope.$on('$routeChangeStart', function(next, current) { 
       alertService.clear();
     });
+    $scope.logout = function() {
+      $http.get('/api/logout/')
+        .then(function(response) {
+          userService.clear();
+          $location.path('/login/');
+        });
+    }
 }]);
 
-fantasyControllers.controller('leagueController', ['$scope', '$http', '$routeParams', 'userInfo',
-  function ($scope, $http, $routeParams, userInfo) {
+fantasyControllers.controller('leagueController', ['$scope', '$http', '$routeParams', 'userService',
+  function ($scope, $http, $routeParams, userService) {
     // when landing on the page, get all teams for the given league and show them
     $scope.teams = [];
     $scope.isOwner = false;
@@ -107,7 +122,7 @@ fantasyControllers.controller('leagueController', ['$scope', '$http', '$routePar
     $http.get('/api/getLeagueOwner/' + $routeParams.leagueId)
       .then(function(response) {
         if (response.data != null) {
-          $scope.isOwner = (userInfo.playerId === response.data.owner_id);
+          $scope.isOwner = (userService.playerId === response.data.owner_id);
         }
       },
       function(response) {
@@ -115,8 +130,8 @@ fantasyControllers.controller('leagueController', ['$scope', '$http', '$routePar
       });
 }]);
 
-fantasyControllers.controller('homeController', ['$scope', '$http', '$routeParams', '$location', '$uibModal', 'userInfo', 
-  function ($scope, $http, $routeParams, $location, $uibModal, userInfo) {
+fantasyControllers.controller('homeController', ['$scope', '$http', '$routeParams', '$location', '$uibModal', 'userService', 
+  function ($scope, $http, $routeParams, $location, $uibModal, userService) {
     // when landing on the page, get all leagues for the given player and show them
     $http.get('/api/getLeaguesByPlayer/' + $routeParams.playerId)
       .then(function(response) {
@@ -127,13 +142,13 @@ fantasyControllers.controller('homeController', ['$scope', '$http', '$routeParam
       });
       
     $scope.joinLeague = function() {
-      if (userInfo.playerId > 0) {
+      if (userService.playerId > 0) {
         $location.path('/joinLeague/'); 
       }
     }
     
     $scope.createLeague = function() {
-      if (userInfo.playerId <= 0) {
+      if (userService.playerId <= 0) {
         return; 
       }
       var modalInstance = $uibModal.open({
@@ -144,7 +159,7 @@ fantasyControllers.controller('homeController', ['$scope', '$http', '$routeParam
           newLeague: {
             teamName : null,
             leagueName : null,
-            ownerId : userInfo.playerId
+            ownerId : userService.playerId
           }
         }
       });
@@ -164,23 +179,22 @@ fantasyControllers.controller('homeController', ['$scope', '$http', '$routeParam
     }
 }]);
 
-fantasyControllers.controller('loginController', ['$scope', '$http', '$location', 'userInfo', 'alertService', 
-  function ($scope, $http, $location, userInfo, alertService) {
-    $scope.loginResult = "";
+fantasyControllers.controller('loginController', ['$scope', '$http', '$location', 'userService', 'alertService', 
+  function ($scope, $http, $location, userService, alertService) {
     $scope.loginCredentials = {};
     $scope.newAccount = {};
     $scope.login = function() {
       $http.post('/api/login', JSON.stringify($scope.loginCredentials))
-        .then(function(response) {
-          if(response.data == null){
+        .success(function(data) {
+          if(data == null){
             alertService.add("danger", "Login Failed");
           }else{
-            userInfo.playerId = response.data.pid;
-            userInfo.username = response.data.username;
-            $location.path('/home/' + response.data.pid); 
+            userService.playerId = data.pid;
+            userService.username = data.username;
+            $location.url('/home/' + data.pid); 
           }
-        },
-        function(data) {
+        })
+        .error(function(data) {
           console.log('Error: ' + data);
         });
     };
@@ -191,8 +205,8 @@ fantasyControllers.controller('loginController', ['$scope', '$http', '$location'
             if(response.data == null){
               alertService.add("danger", "Could not create account");
             }else{
-              userInfo.playerId = response.data.pid;
-              userInfo.username = response.data.username;
+              userService.playerId = response.data.pid;
+              userService.username = response.data.username;
               $location.path('/home/' + response.data.pid); 
             }
           },
@@ -205,8 +219,8 @@ fantasyControllers.controller('loginController', ['$scope', '$http', '$location'
     };
 }]);
 
-fantasyControllers.controller('teamController', ['$scope', '$http', '$routeParams', 'userInfo',
-  function ($scope, $http, $routeParams, userInfo) {
+fantasyControllers.controller('teamController', ['$scope', '$http', '$routeParams', 'userService',
+  function ($scope, $http, $routeParams, userService) {
     $scope.selectedDrafts = [];
     $scope.availableDrafts = [];
     $scope.isOwner = false;
@@ -222,7 +236,7 @@ fantasyControllers.controller('teamController', ['$scope', '$http', '$routeParam
       
     $http.get('/api/getTeamOwner/' + $routeParams.teamId)
       .then(function(response) {
-        $scope.isOwner = (response.data.player_id === userInfo.playerId);
+        $scope.isOwner = (response.data.player_id === userService.playerId);
       },
       function(response) {
         console.log('Error: ' + response.data);
@@ -417,11 +431,11 @@ fantasyControllers.controller('manageLeagueController', ['$scope', '$http', '$ro
     }
 }]);
 
-fantasyControllers.controller('joinLeagueController', ['$scope', '$http', '$location', '$uibModal', 'userInfo',
-  function ($scope, $http, $location, $uibModal, userInfo) {
-    $scope.userInfo = userInfo;
+fantasyControllers.controller('joinLeagueController', ['$scope', '$http', '$location', '$uibModal', 'userService',
+  function ($scope, $http, $location, $uibModal, userService) {
+    $scope.userService = userService;
     // when landing on the page, get all leagues for the given player and show them
-    $http.get('/api/getAvailableLeaguesByPlayer/' + userInfo.playerId)
+    $http.get('/api/getAvailableLeaguesByPlayer/' + userService.playerId)
       .then(function(response) {
         $scope.leagues = response.data;
       },
@@ -438,7 +452,7 @@ fantasyControllers.controller('joinLeagueController', ['$scope', '$http', '$loca
             teamName : null,
             leagueName : $scope.leagues[index].description,
             leagueId : $scope.leagues[index].lid,
-            playerId : userInfo.playerId
+            playerId : userService.playerId
           }
         }
       });
@@ -484,14 +498,14 @@ fantasyControllers.controller('createLeagueModalController', ['$scope', '$uibMod
     };
 }]);
 
-fantasyControllers.controller('accountController', ['$scope', '$http', 'userInfo', 'alertService',
-  function ($scope, $http, userInfo, alertService) {
+fantasyControllers.controller('accountController', ['$scope', '$http', 'userService', 'alertService',
+  function ($scope, $http, userService, alertService) {
     var original = { };
-    $http.get('/api/getPlayer/' + userInfo.playerId)
+    $http.get('/api/getPlayer/' + userService.playerId)
       .then(function(response) {
         original = response.data;
         $scope.modified = {
-          playerId : userInfo.playerId,
+          playerId : userService.playerId,
           username : original.username,
           email : original.email,
           password : '',
@@ -534,12 +548,13 @@ fantasyControllers.controller('accountController', ['$scope', '$http', 'userInfo
 var fantasyApp = angular.module('fantasyApp', [
   'ngRoute',
   'ngAnimate',
-  'fantasyControllers',
-  'ui.bootstrap'
+  'ngResource',
+  'ui.bootstrap',
+  'fantasyControllers'
 ]);
 
-fantasyApp.config(['$routeProvider',
-  function($routeProvider) {
+fantasyApp.config(['$routeProvider', '$httpProvider',
+  function($routeProvider, $httpProvider) {
     $routeProvider.
       when('/account/', {
         templateUrl : 'partials/account.html',
@@ -572,5 +587,18 @@ fantasyApp.config(['$routeProvider',
       otherwise({
         redirectTo : '/login'
       });
+    $httpProvider.interceptors.push(function($q, $location) {
+      return {
+        response: function(response) {
+          // do something on success
+          return response;
+        },
+        responseError: function(response) {
+          if (response.status === 401)
+            $location.url('/login');
+          return $q.reject(response);
+        }
+      };
+    });
   }
 ]);

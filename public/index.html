@@ -17,6 +17,7 @@
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0/angular-animate.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0/angular-route.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0/angular-messages.js"></script>  
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0/angular-resource.js"></script> 
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.js"></script>
   
   <!-- other dependencies -->
@@ -43,15 +44,15 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="#/home/{{ userInfo.playerId }}" ng-click="navCollapsed = true; clear();">Fantasy Everything</a>
+        <a class="navbar-brand" href="#/home/{{ userInfo.playerId }}" ng-click="navCollapsed = true;">Fantasy Everything</a>
       </div>
       <div class="collapse navbar-collapse" collapse="navCollapsed">
         <ul class="nav navbar-nav">
-          <li class="active"><a href="#/home/{{ userInfo.playerId }}" ng-click="navCollapsed = true; clear();">Home</a></li>
+          <li class="active"><a href="#/home/{{ userInfo.playerId }}" ng-click="navCollapsed = true;">Home</a></li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
-          <li ng-show="userInfo.username!=null"><a href="#/account/" ng-click="navCollapsed = true; clear();">{{ userInfo.username }}'s Account</a></li>
-          <li><a href="#/login/" ng-click="navCollapsed = true">Log Out</a></li>
+          <li ng-show="userInfo.username!=null"><a href="#/account/" ng-click="navCollapsed = true;">{{ userInfo.username }}'s Account</a></li>
+          <li><a href="" ng-click="navCollapsed = true; logout();">Log Out</a></li>
         </ul>
       </div><!--/.nav-collapse -->
     </div>

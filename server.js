@@ -1,18 +1,95 @@
 var http = require('http');
 var express = require('express');
+var cookieSession = require('cookie-session');
+var cookieParser = require('cookie-parser');
 var app = express();
 var morgan = require('morgan');             // log requests to the console (express4)
 var bodyParser = require('body-parser');    // pull information from HTML POST (express4)
 var methodOverride = require('method-override'); // simulate DELETE and PUT (express4)
 var path = require('path');
 var mysql = require('mysql');
+var passport = require('passport');
+var LocalStrategy = require('passport-local').Strategy;
+var crypto = require('crypto');
 
-app.use(express.static(__dirname + '/public'));                 // set the static files location /public/img will be /img for users
+app.use(cookieParser());
 app.use(morgan('dev'));                                         // log every request to the console
 app.use(bodyParser.urlencoded({'extended':'true'}));            // parse application/x-www-form-urlencoded
 app.use(bodyParser.json());                                     // parse application/json
 app.use(bodyParser.json({ type: 'application/vnd.api+json' })); // parse application/vnd.api+json as json
+app.use(cookieSession({ 
+  genid : function(req) { return generateGUID },
+  secret : 'wubbalubbadubdub',
+  resave : true,
+  saveUninitialized : true,
+  cookie : { secure : false, maxAge : (4 * 60 * 60 * 1000) }
+}));
 app.use(methodOverride());
+
+app.use(express.static(__dirname + '/public'));                 // set the static files location /public/img will be /img for users
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.serializeUser(function(user, done) {
+  console.log('Serializing user: ' + JSON.stringify(user.pid));
+  done(null, user.pid);
+  //done(null, user);
+});
+
+passport.deserializeUser(function(id, done) {
+  console.log('Deserializing user: ' + id);
+  var queryString = 
+    'SELECT pid, username, email' +
+    '  FROM player ' + 
+    ' WHERE pid = ' + id + ';';
+  getConnection(function(connection) {
+    connection.query(queryString, function(err, result) {
+      console.log('Deserializing user with result: ' + JSON.stringify(result[0]));
+      done(err, result[0]);
+    });
+  });
+  //done(null, user);
+});
+
+function generateGUID() {
+  return crypto.randomBytes(48).toString('hex');
+}
+
+function authenticatedRequest(req, res, next) {
+  console.log('Checking authentication for user ' + JSON.stringify(req.user));
+  console.log('Checking authentication for session ' + JSON.stringify(req.session));
+  if (req.isAuthenticated()) {
+    console.log('Request was authenticated');
+    next();
+  } else {
+    console.log('Request was not authenticated');
+    res.sendStatus(401);
+  }
+}
+
+passport.use('local-login', new LocalStrategy(
+  function(username, password, done) {
+    var queryString = 
+      'SELECT pid, username, email' +
+      '  FROM player ' + 
+      ' WHERE username = \'' + sanitize(username) + '\'' +
+      '   AND password = \'' + sanitize(password) + '\';';
+    getConnection(function(connection) {
+      connection.query(queryString, function(err, result, fields) {
+        if (err) {
+          console.log("[CRITICAL] Query error: " + err);
+          return done(err);
+        } else {
+          if (result.length > 0) {
+            return done(null, result[0]);
+          } else {
+            return done(null, false);
+          }
+        }
+      });
+    });
+}));
 
 var sanitize = function (str) {
   return str.replace(/[\0\x08\x09\x1a\n\r"'\\\%]/g, function (char) {
@@ -91,7 +168,9 @@ var singleRowQuery = function(queryString, res) {
   });
 }
 
-app.get('/api/getActorsByLeague/:leagueId', function(req, res) {
+app.get('/api/getActorsByLeague/:leagueId', 
+  authenticatedRequest,
+  function(req, res) {
   var leagueId = req.params.leagueId;
   var queryString = 
     'SELECT * ' +
@@ -100,7 +179,9 @@ app.get('/api/getActorsByLeague/:leagueId', function(req, res) {
   simpleQuery(queryString, res);
 });
 
-app.get('/api/getActionsByLeague/:leagueId', function(req, res) {
+app.get('/api/getActionsByLeague/:leagueId', 
+  authenticatedRequest,
+  function(req, res) {
   var leagueId = req.params.leagueId;
   var queryString = 
     'SELECT * ' +
@@ -109,7 +190,9 @@ app.get('/api/getActionsByLeague/:leagueId', function(req, res) {
   simpleQuery(queryString, res);
 });
 
-app.get('/api/getTeamsByLeague/:leagueId', function(req, res) {
+app.get('/api/getTeamsByLeague/:leagueId', 
+  authenticatedRequest,
+  function(req, res) {
   var leagueId = req.params.leagueId;
   var queryString = 
     'SELECT t.tid, t.team_name, p.username, t.total_points ' +
@@ -120,8 +203,13 @@ app.get('/api/getTeamsByLeague/:leagueId', function(req, res) {
   simpleQuery(queryString, res);
 });
 
-app.get('/api/getLeaguesByPlayer/:playerId', function(req, res) {
+app.get('/api/getLeaguesByPlayer/:playerId', 
+  authenticatedRequest, 
+  function(req, res) {
   var playerId = req.params.playerId;
+  if (req.user.pid != playerId) {
+    return res.sendStatus(401);
+  }
   var queryString = 
     'SELECT f_league.lid,' +
     '       f_league.description,' +
@@ -135,8 +223,13 @@ app.get('/api/getLeaguesByPlayer/:playerId', function(req, res) {
   simpleQuery(queryString, res);
 });
 
-app.get('/api/getAvailableLeaguesByPlayer/:playerId', function(req, res) {
+app.get('/api/getAvailableLeaguesByPlayer/:playerId', 
+  authenticatedRequest,
+  function(req, res) {
   var playerId = req.params.playerId;
+  if (req.user.pid != playerId) {
+    return res.sendStatus(401);
+  }
   var queryString = 
     'SELECT f_league.lid,' +
     '       f_league.description,' +
@@ -157,7 +250,9 @@ app.get('/api/getAvailableLeaguesByPlayer/:playerId', function(req, res) {
   simpleQuery(queryString, res);
 });
 
-app.get('/api/getLeagueOwner/:leagueId', function(req, res) {
+app.get('/api/getLeagueOwner/:leagueId', 
+  authenticatedRequest,
+  function(req, res) {
   var leagueId = req.params.leagueId;
   var queryString = 
     'SELECT f_league.owner_id' +
@@ -166,7 +261,9 @@ app.get('/api/getLeagueOwner/:leagueId', function(req, res) {
   singleRowQuery(queryString, res);
 });
 
-app.get('/api/getTeamOwner/:teamId', function(req, res) {
+app.get('/api/getTeamOwner/:teamId', 
+  authenticatedRequest,
+  function(req, res) {
   var teamId = req.params.teamId;
   var queryString = 
     'SELECT f_team.player_id' +
@@ -175,8 +272,13 @@ app.get('/api/getTeamOwner/:teamId', function(req, res) {
   singleRowQuery(queryString, res);
 });
 
-app.get('/api/getPlayer/:playerId', function(req, res) {
+app.get('/api/getPlayer/:playerId', 
+  authenticatedRequest,
+  function(req, res) {
   var playerId = req.params.playerId;
+  if (req.user.pid != playerId) {
+    return res.sendStatus(401);
+  }
   var queryString = 
     'SELECT pid, username, email' +
     '  FROM player' + 
@@ -184,17 +286,23 @@ app.get('/api/getPlayer/:playerId', function(req, res) {
   singleRowQuery(queryString, res);
 });
 
-app.post('/api/login', function(req, res){
-  var obj = req.body;
-  var queryString = 
-    'SELECT pid, username' +
-    '  FROM player ' + 
-    ' WHERE username = \'' + sanitize(obj.username) + '\'' +
-    '   AND password = \'' + sanitize(obj.password) + '\';';
-  singleRowQuery(queryString, res);
+app.post('/api/login', 
+  passport.authenticate('local-login'), 
+  function (req, res) {
+    console.log('Sending back req.user: ' + JSON.stringify(req.user));
+    res.send(req.user);
 });
 
-app.get('/api/getDraftsByTeam/:teamId', function(req, res) {
+app.get('/api/logout', function(req, res){
+  if (req.isAuthenticated()) {
+    req.logOut();
+  } 
+  res.json(null);
+});
+
+app.get('/api/getDraftsByTeam/:teamId', 
+  authenticatedRequest,
+  function(req, res) {
   var teamId = req.params.teamId;
   var queryString = 
     'SELECT d.participated_id, ' +
@@ -214,7 +322,9 @@ app.get('/api/getDraftsByTeam/:teamId', function(req, res) {
   simpleQuery(queryString, res);
 });
 
-app.get('/api/getAvailablePicksByTeam/:teamId', function(req, res) {
+app.get('/api/getAvailablePicksByTeam/:teamId', 
+  authenticatedRequest,
+  function(req, res) {
   var teamId = req.params.teamId;
   var queryString = 
     'SELECT ar.description AS actor, ' +
@@ -238,7 +348,9 @@ app.get('/api/getAvailablePicksByTeam/:teamId', function(req, res) {
   simpleQuery(queryString, res);
 });
 
-app.get('/api/getDraftsByLeague/:leagueId', function(req, res) {
+app.get('/api/getDraftsByLeague/:leagueId', 
+  authenticatedRequest,
+  function(req, res) {
   var leagueId = req.params.leagueId;
   var queryString = 
     'SELECT drafted_rule.participated_id,' +
@@ -257,7 +369,9 @@ app.get('/api/getDraftsByLeague/:leagueId', function(req, res) {
   simpleQuery(queryString, res);
 });
 
-app.post('/api/addDraftedRule', function(req, res){
+app.post('/api/addDraftedRule', 
+  authenticatedRequest,
+  function(req, res){
   var obj = req.body;
   var queryString = "";
   if (obj.action === null) {
@@ -283,7 +397,9 @@ app.post('/api/addDraftedRule', function(req, res){
   simpleQuery(queryString, res);
 });
 
-app.post('/api/removeDraftedRule', function(req, res){
+app.post('/api/removeDraftedRule', 
+  authenticatedRequest,
+  function(req, res){
   var obj = req.body;
   var queryString = "";
   if (obj.action === null) {
@@ -302,7 +418,9 @@ app.post('/api/removeDraftedRule', function(req, res){
   simpleQuery(queryString, res);
 });
 
-app.post('/api/setFulfilledCount/', function(req, res){
+app.post('/api/setFulfilledCount/', 
+  authenticatedRequest,
+  function(req, res){
   var obj = req.body;
   var queryString = "";
   if (obj.drafted_rule === null) {
@@ -320,7 +438,9 @@ app.post('/api/setFulfilledCount/', function(req, res){
   simpleQuery(queryString, res);
 });
 
-app.post('/api/addActor', function(req, res){
+app.post('/api/addActor', 
+  authenticatedRequest,
+  function(req, res){
   var obj = req.body;
   var queryString =
     'INSERT INTO actor(description, f_league_id, managed_actor_id)' +
@@ -347,7 +467,9 @@ app.post('/api/addActor', function(req, res){
   });
 });
 
-app.post('/api/removeActor', function(req, res){
+app.post('/api/removeActor', 
+  authenticatedRequest,
+  function(req, res){
   var obj = req.body;
   var queryString = 
     'DELETE FROM actor' +
@@ -355,7 +477,9 @@ app.post('/api/removeActor', function(req, res){
   simpleQuery(queryString, res);
 });
 
-app.post('/api/addAction', function(req, res){
+app.post('/api/addAction', 
+  authenticatedRequest,
+  function(req, res){
   var obj = req.body;
   var queryString =
     'INSERT INTO action(description, points, f_league_id, managed_action_id)' +
@@ -381,7 +505,9 @@ app.post('/api/addAction', function(req, res){
   });
 });
 
-app.post('/api/removeAction', function(req, res){
+app.post('/api/removeAction', 
+  authenticatedRequest,
+  function(req, res){
   var obj = req.body;
   var queryString = 
     'DELETE FROM action' +
@@ -389,7 +515,9 @@ app.post('/api/removeAction', function(req, res){
   simpleQuery(queryString, res);
 });
 
-app.post('/api/addPlayer', function(req, res){
+app.post('/api/addPlayer', 
+  authenticatedRequest,
+  function(req, res){
   var obj = req.body;
   var queryString =
     'INSERT INTO player(username, password, email)' +
@@ -415,7 +543,9 @@ app.post('/api/addPlayer', function(req, res){
   });
 });
 
-app.post('/api/addTeam', function(req, res){
+app.post('/api/addTeam', 
+  authenticatedRequest,
+  function(req, res){
   var obj = req.body;
   var queryString =
     'INSERT INTO f_team(team_name, player_id, lid)' +
@@ -441,7 +571,9 @@ app.post('/api/addTeam', function(req, res){
   });
 });
 
-app.post('/api/addLeague', function(req, res){
+app.post('/api/addLeague', 
+  authenticatedRequest,
+  function(req, res){
   var obj = req.body;
   var queryString =
     'INSERT INTO f_league(description, active, owner_id)' +
@@ -477,8 +609,13 @@ app.post('/api/addLeague', function(req, res){
   });
 });
 
-app.post('/api/updatePlayer', function(req, res){
+app.post('/api/updatePlayer', 
+  authenticatedRequest,
+  function(req, res){
   var obj = req.body;
+  if (req.user.pid != obj.playerId) {
+    return res.sendStatus(401);
+  }
   var queryString;
   if (obj.password === '') {
     queryString =
