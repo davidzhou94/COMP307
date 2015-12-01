@@ -84,7 +84,7 @@ exports.localLoginStrategy = new LocalStrategy(
 exports.facebookLoginStrategy = new FacebookStrategy({
     clientID        : secrets.fbClientId,
     clientSecret    : secrets.fbClientSecret,
-    callbackURL     : 'http://localhost.com/api/facebook/callback',
+    callbackURL     : secrets.fbCallbackURL,
     profileFields: ['id', 'emails', 'name']
   },
   // facebook will send back the profile
