@@ -322,6 +322,9 @@ exports.removeAction = function(req, res){
 };
 
 exports.addPlayer = function(req, res){
+  if (req.isAuthenticated()){
+    return res.json(null);
+  }
   var obj = req.body;
   var queryString =
     'INSERT INTO player(username, password, email)' +

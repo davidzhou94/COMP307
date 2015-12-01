@@ -40,7 +40,8 @@ app.use(passport.initialize());
 app.use(passport.session());
 passport.serializeUser(auth.serializeUser);
 passport.deserializeUser(auth.deserializeUser);
-passport.use('local-login', auth.localStrategy);
+passport.use('local-login', auth.localLoginStrategy);
+passport.use('facebook-login', auth.facebookLoginStrategy);
 
 // set up routes - the rest of our code is here and in api.js 
 // which is a module referenced by routes.js

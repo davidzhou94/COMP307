@@ -1,7 +1,11 @@
 <div class="well">
   <h2>Home</h2>
+  <div ng-show="leagues.length <= 0" class="container-fluid">
+    <h1>Welcome to Fantasy Everything!</h1>
+    <p>It looks like you are new to the game. To play the game you can join a existing league or create a new league with your own rules for the traditional fantasy format. Click on either "Join League" or "Create League" in the navigation bar above to play.</p>
+  </div>
   <!-- LEAGUE LIST -->
-  <table class="table table-bordered table-hover">
+  <table ng-show="leagues.length > 0" class="table table-bordered table-hover">
     <thead>
       <tr>
         <th>League Name</th>

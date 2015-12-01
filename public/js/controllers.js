@@ -144,9 +144,9 @@ fantasyControllers.controller('loginController', ['$scope', '$http', '$location'
             if(response.data == null){
               alertService.add("danger", "Could not create account");
             }else{
-              userService.playerId = response.data.pid;
-              userService.username = response.data.username;
-              $location.path('/home/' + response.data.pid); 
+              $scope.loginCredentials.username = $scope.newAccount.username;
+              $scope.loginCredentials.password = $scope.newAccount.password;
+              $scope.login();
             }
           },
           function(data) {

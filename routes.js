@@ -104,7 +104,6 @@
     );
 
     app.post('/api/addPlayer', 
-      auth.check,
       api.addPlayer
     );
 
@@ -131,6 +130,17 @@
     app.get('/api/logout',
       auth.logout
     );
+    
+    app.get('/api/facebook', 
+      passport.authenticate('facebook-login', { scope : ['public_profile', 'email'] })
+    );
+
+    // handle the callback after facebook has authenticated the user
+    app.get('/api/facebook/callback',
+		passport.authenticate('facebook-login', {
+			successRedirect : '/',
+			failureRedirect : '/'
+		}));
 
     app.get('*', function(req, res) {
       // load the single view file (angular will handle the page changes on the front-end)

@@ -18,15 +18,15 @@ VALUES
 (1, 'rick', 'rick', 'rick@rick.com'),
 (2, 'morty', 'morty', 'morty@rick.com'),
 (3, 'summer', 'summer', 'summer@rick.com'),
-(4, 'Grady', 'password', 'info@davidzhou.ca'),
-(5, 'Valerie', 'password', 'info@davidzhou.ca'),
+(4, 'Grady', 'password', 'Grady@davidzhou.ca'),
+(5, 'Valerie', 'password', 'Valerie@davidzhou.ca'),
 (6, 'David', 'password', 'info@davidzhou.ca'),
-(7, 'Boustan', 'password', 'info@davidzhou.ca'),
-(8, 'Basha', 'password', 'info@davidzhou.ca'),
-(9, 'Vihns', 'password', 'info@davidzhou.ca'),
-(10, 'Vua', 'password', 'info@davidzhou.ca'),
-(11, 'Samosa', 'password', 'info@davidzhou.ca'),
-(12, 'Pizza', 'password', 'info@davidzhou.ca');
+(7, 'Boustan', 'password', 'Boustan@davidzhou.ca'),
+(8, 'Basha', 'password', 'Basha@davidzhou.ca'),
+(9, 'Vihns', 'password', 'Vihns@davidzhou.ca'),
+(10, 'Vua', 'password', 'Vua@davidzhou.ca'),
+(11, 'Samosa', 'password', 'Samosa@davidzhou.ca'),
+(12, 'Pizza', 'password', 'Pizza@davidzhou.ca');
 
 INSERT INTO f_league (lid, description, active, owner_id)
 VALUES

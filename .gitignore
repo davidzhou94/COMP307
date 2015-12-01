@@ -1,3 +1,4 @@
 node_modules
 *.crt
 *.pem
+secrets.js
