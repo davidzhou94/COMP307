@@ -1,32 +1,27 @@
-<!-- HEADER AND LEAGUE COUNT -->
-<div class="jumbotron text-center">
-  <h1>You are participating in <span ng-cloak class="label label-info">{{ leagues.length }}</span> fantasy leagues. </h1>
-</div>
-    
-    
-<!-- LEAGUE LIST -->
-<button type="button" class="btn btn-default" ng-click="joinLeague()">Join New League</button>
-<button type="button" class="btn btn-default" ng-click="createLeague()">Create New League</button>
-<table class="table table-bordered table-hover">
-  <thead>
-    <tr>
-      <th>League Name</th>
-      <th>Your Team</th>
-      <th>Current Points</th>
-    </tr>
-  </thead>
-  <tbody>
-    <!-- LOOP OVER THE LEAGUES IN $scope.leagues -->
-    <tr ng-cloak ng-repeat="league in leagues">
-      <td>
-        <a href="#/league/{{league.lid}}">{{ league.description }}</a>
-      </td>
-      <td>
-        <a href="#/team/{{league.tid}}">{{ league.team_name }}</a>
-      </td>
-      <td>
-        {{ league.total_points || 0 }}
-      </td>
-    </tr>
-  </tbody>
-</table>
+<div class="well">
+  <h2>Home</h2>
+  <!-- LEAGUE LIST -->
+  <table class="table table-bordered table-hover">
+    <thead>
+      <tr>
+        <th>League Name</th>
+        <th>Your Team</th>
+        <th>Current Points</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- LOOP OVER THE LEAGUES IN $scope.leagues -->
+      <tr ng-cloak ng-repeat="league in leagues">
+        <td>
+          <a href="#/league/{{league.lid}}">{{ league.description }}</a>
+        </td>
+        <td>
+          <a href="#/team/{{league.tid}}">{{ league.team_name }}</a>
+        </td>
+        <td>
+          {{ league.total_points || 0 }}
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div> <!-- .well -->

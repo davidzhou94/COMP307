@@ -288,6 +288,15 @@ app.get('/api/getPlayer/:playerId',
   singleRowQuery(queryString, res);
 });
 
+app.get('/api/checkAuthenticated/', 
+  function(req, res) {
+  if (!req.isAuthenticated()) {
+    return res.json(null);
+  } else {
+    return res.json(req.user);
+  }
+});
+
 app.post('/api/login', 
   passport.authenticate('local-login'), 
   function (req, res) {
@@ -649,15 +658,12 @@ var cert = fs.readFileSync(path.join(certsPath, 'comp307_davidzhou_ca.crt'));
 
 var credentials = {key: key, cert: cert};
 
-http.createServer(app).listen(8000);
-console.log('Server Started at port 8000');
+http.createServer(app).listen(80);
+console.log('Server Started at port 80');
 
 https.createServer(credentials, app).listen(443);
 console.log('Secure Server Started at port 443');  
 
-/*var server = app.listen(8000, function(){
-    console.log('Server Started at port 8000');  
-});*/
 process.on('SIGTERM', function(){
     process.exit();
 });

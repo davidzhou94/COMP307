@@ -48,7 +48,8 @@
       </div>
       <div class="collapse navbar-collapse" collapse="navCollapsed">
         <ul class="nav navbar-nav">
-          <li class="active"><a href="#/home/{{ userInfo.playerId }}" ng-click="navCollapsed = true;">Home</a></li>
+          <li ng-show="userInfo.playerId"><a href="#/home/{{ userInfo.playerId }}" ng-click="navCollapsed = true;">Home</a></li>
+          <li ng-repeat="menuItem in menuItems"><a ng-href="{{menuItem.href}}" ng-click="navCollapsed = true; menuItem.action();">{{ menuItem.text }}</a></li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
           <li ng-show="userInfo.username!=null"><a href="#/account/" ng-click="navCollapsed = true;">{{ userInfo.username }}'s Account</a></li>
@@ -60,9 +61,8 @@
 
   <div class="container">
     <uib-alert ng-repeat="alert in alerts" type="{{alert.type}}" close="alert.close()">{{ alert.msg }}</uib-alert>
-
-    <div ng-view></div>
   </div>
+  <div ng-view class="container"></div>
   
 </body>
 </html>

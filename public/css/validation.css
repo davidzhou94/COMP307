@@ -1,12 +1,3 @@
-body {
-  background-image: url('../img/C14V73FQJH.jpg');
-  background-position: center center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-  background-size: cover;
-  background-color: #464646;
-}
-
 .ng-invalid {
     border-color: red;
     outline-color: red;

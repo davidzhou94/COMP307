@@ -1,34 +1,33 @@
-<!-- HEADER AND TEAM COUNT -->
-<div class="jumbotron text-center">
-  <h2>There are <span ng-cloak class="label label-info">{{ leagues.length }}</span> leagues available to join. </h2>
-</div>
-    
-    
-<!-- TEAM LIST -->
-<table class="table table-bordered table-hover">
-  <thead>
-    <tr>
-      <th>League Name</th>
-      <th>Owner</th>
-      <th>Teams</th>
-      <th ng-show="userInfo.playerId">Options</th>
-    </tr>
-  </thead>
-  <tbody>
-    <!-- LOOP OVER THE TEAMS IN $scope.leagues -->
-    <tr ng-cloak ng-repeat="league in leagues">
-      <td>
-        <a href="#/league/{{league.lid}}">{{ league.description }}</a>
-      </td>
-      <td>
-        {{ league.owner }}
-      </td>
-      <td>
-        {{ league.num_teams || 0 }}
-      </td>
-      <td ng-show="userInfo.playerId">
-        <button ng-click="joinLeague($index);" type="button" class="btn btn-default">Join</button>
-      </td>
-    </tr>
-  </tbody>
-</table>
+<div class="well">
+  <h2>Join league</h2> 
+  <p> There are <span ng-cloak class="label label-info">{{ leagues.length }}</span> leagues available to join. </p>
+      
+  <!-- TEAM LIST -->
+  <table class="table table-bordered table-hover">
+    <thead>
+      <tr>
+        <th>League Name</th>
+        <th>Owner</th>
+        <th>Teams</th>
+        <th ng-show="userInfo.playerId">Options</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- LOOP OVER THE TEAMS IN $scope.leagues -->
+      <tr ng-cloak ng-repeat="league in leagues">
+        <td>
+          <a href="#/league/{{league.lid}}">{{ league.description }}</a>
+        </td>
+        <td>
+          {{ league.owner }}
+        </td>
+        <td>
+          {{ league.num_teams || 0 }}
+        </td>
+        <td ng-show="userInfo.playerId">
+          <button ng-click="joinLeague($index);" type="button" class="btn btn-default">Join</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div> <!-- .well -->

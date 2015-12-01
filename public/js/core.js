@@ -68,6 +68,34 @@ fantasyControllers.factory('alertService', function() {
     return alerts;
   }
 });
+
+fantasyControllers.factory('menuService', function() {
+  var menuService = {
+    add : add,
+    clear : clear,
+    get : get
+  }
+  
+  var menuItems = [];
+  
+  return menuService;
+  
+  function add(item) {
+    return menuItems.push({
+      href : item.href,
+      action : item.action,
+      text : item.text
+    });
+  }
+  
+  function clear() {
+    return menuItems.length = 0;
+  }
+  
+  function get() {
+    return menuItems;
+  }
+});
  
 // for password validation.
 // http://odetocode.com/blogs/scott/archive/2014/10/13/confirm-password-validation-in-angularjs.aspx
@@ -88,24 +116,34 @@ fantasyControllers.directive("compareTo", function() {
   };
 });
 
-fantasyControllers.controller('defaultController', ['$scope', '$http', '$location', '$route', 'userService', 'alertService', 
-  function ($scope, $http, $location, $route, userService, alertService) {
+fantasyControllers.controller('defaultController', ['$scope', '$http', '$location', '$route', 'userService', 'alertService', 'menuService',
+  function ($scope, $http, $location, $route, userService, alertService, menuService) {
+    $http.get('/api/checkAuthenticated')
+      .then(function(response) {
+        if (response.data) {
+          userService.playerId = response.data.pid,
+          userService.username = response.data.username
+        }
+      });
     $scope.userInfo = userService;
     $scope.alerts = alertService.get();
+    $scope.menuItems = menuService.get();
     $scope.$on('$routeChangeStart', function(next, current) { 
       alertService.clear();
+      menuService.clear();
     });
     $scope.logout = function() {
       $http.get('/api/logout/')
         .then(function(response) {
           userService.clear();
+          menuService.clear();
           $location.path('/login/');
         });
     }
 }]);
 
-fantasyControllers.controller('leagueController', ['$scope', '$http', '$routeParams', 'userService',
-  function ($scope, $http, $routeParams, userService) {
+fantasyControllers.controller('leagueController', ['$scope', '$http', '$routeParams', 'userService', 'menuService',
+  function ($scope, $http, $routeParams, userService, menuService) {
     // when landing on the page, get all teams for the given league and show them
     $scope.teams = [];
     $scope.isOwner = false;
@@ -123,6 +161,9 @@ fantasyControllers.controller('leagueController', ['$scope', '$http', '$routePar
       .then(function(response) {
         if (response.data != null) {
           $scope.isOwner = (userService.playerId === response.data.owner_id);
+          if ($scope.isOwner) {
+            menuService.add({text : 'Manage League', href : '#/manageLeague/' + $routeParams.leagueId});
+          }
         }
       },
       function(response) {
@@ -130,9 +171,10 @@ fantasyControllers.controller('leagueController', ['$scope', '$http', '$routePar
       });
 }]);
 
-fantasyControllers.controller('homeController', ['$scope', '$http', '$routeParams', '$location', '$uibModal', 'userService', 
-  function ($scope, $http, $routeParams, $location, $uibModal, userService) {
+fantasyControllers.controller('homeController', ['$scope', '$http', '$routeParams', '$rootScope', '$location', '$uibModal', 'userService', 'menuService',
+  function ($scope, $http, $routeParams, $rootScope, $location, $uibModal, userService, menuService) {
     // when landing on the page, get all leagues for the given player and show them
+    $scope.userInfo = userService;
     $http.get('/api/getLeaguesByPlayer/' + $routeParams.playerId)
       .then(function(response) {
         $scope.leagues = response.data;
@@ -140,14 +182,14 @@ fantasyControllers.controller('homeController', ['$scope', '$http', '$routeParam
       function(response) {
         console.log('Error: ' + response.data);
       });
-      
-    $scope.joinLeague = function() {
+    
+    function joinLeague() {
       if (userService.playerId > 0) {
         $location.path('/joinLeague/'); 
       }
     }
     
-    $scope.createLeague = function() {
+    var createLeague = function() {
       if (userService.playerId <= 0) {
         return; 
       }
@@ -177,10 +219,20 @@ fantasyControllers.controller('homeController', ['$scope', '$http', '$routeParam
         console.log('Modal dismissed at: ' + new Date());
       });
     }
+    
+    menuService.add({text : 'Join League', action : joinLeague});
+    menuService.add({text : 'Create New League', action : createLeague});
 }]);
 
 fantasyControllers.controller('loginController', ['$scope', '$http', '$location', 'userService', 'alertService', 
   function ($scope, $http, $location, userService, alertService) {
+    $http.get('/api/checkAuthenticated')
+      .then(function(response) {
+        if (response.data) {
+          $location.url('/home/' + response.data.pid);
+        }
+      });
+  
     $scope.loginCredentials = {};
     $scope.newAccount = {};
     $scope.login = function() {
@@ -195,6 +247,7 @@ fantasyControllers.controller('loginController', ['$scope', '$http', '$location'
           }
         })
         .error(function(data) {
+          alertService.add("danger", "Login Failed");
           console.log('Error: ' + data);
         });
     };
@@ -224,6 +277,7 @@ fantasyControllers.controller('teamController', ['$scope', '$http', '$routeParam
     $scope.selectedDrafts = [];
     $scope.availableDrafts = [];
     $scope.isOwner = false;
+    $scope.newPicksText = "+ Draft New Picks";
     
     // when landing on the page, get all drafts for the given team and show them
     $http.get('/api/getDraftsByTeam/' + $routeParams.teamId)
@@ -244,6 +298,7 @@ fantasyControllers.controller('teamController', ['$scope', '$http', '$routeParam
 
     $scope.load = function(show) {
       if (show) {
+        $scope.newPicksText = "- Draft New Picks";
         $http.get('/api/getAvailablePicksByTeam/' + $routeParams.teamId)
           .then(function(response) {
             $scope.availableDrafts = response.data;
@@ -251,6 +306,8 @@ fantasyControllers.controller('teamController', ['$scope', '$http', '$routeParam
           function(response) {
             console.log('Error: ' + response.data);
           });
+      } else {
+        $scope.newPicksText = "+ Draft New Picks";
       }
     }
     
@@ -319,6 +376,8 @@ fantasyControllers.controller('manageLeagueController', ['$scope', '$http', '$ro
     $scope.leagueDrafts = [];
     $scope.actors = [];
     $scope.actions = [];
+    $scope.newActor = {};
+    $scope.newAction = {};
 
     $http.get('/api/getDraftsByLeague/' + leagueId)
       .then(function(response) {

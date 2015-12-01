@@ -1,26 +1,29 @@
-<div class="col-md-12">
-  <h1>Account Settings</h1>
-</div>
-<div class="col-md-6">
-  <form ng-submit="updateAccount(accountForm.$valid)" novalidate name="accountForm">
-    <div class="form-group">
-      <label class="control-label" >Username</label>
-      <input ng-model="modified.username" type="text" id="username" class="form-control">
-    </div>
-    <div class="form-group">
-      <label class="control-label" >Email</label>
-      <input ng-model="modified.email" type="text" id="email" class="form-control">
-    </div>
-    <div class="form-group">
-      <label class="control-label" >Change password</label>
-      <input ng-model="modified.password" type="password" id="email" class="form-control">
-    </div>
-    <div class="form-group">
-      <label class="control-label" >Confirm new password</label>
-      <input ng-model="modified.confirmPassword" type="password" id="email" class="form-control">
-    </div>
-    <div class="form-group">
-      <button class="btn btn-primary" type="submit">Save changes</button>
-    </div>
-  </form>
+<link rel="stylesheet" href="./css/validation.css">
+<div class="well col-md-6">
+    <h2>Account Settings</h2>
+    <form ng-submit="updateAccount(accountForm.$valid)" novalidate name="accountForm">
+      <div class="form-group">
+        <label class="control-label" >Username</label>
+        <input ng-minlength="5" ng-maxlength="50" required ng-model="modified.username" type="text" name="newUsername" id="newUsername" class="form-control">
+        <div ng-messages="accountForm.newUsername.$error" ng-messages-include="partials/messages.html"></div>
+      </div>
+      <div class="form-group">
+        <label class="control-label" >Email</label>
+        <input ng-maxlength="50" required ng-model="modified.email" type="text" name="newEmail" id="newEmail" class="form-control">
+        <div ng-messages="accountForm.newEmail.$error" ng-messages-include="partials/messages.html"></div>
+      </div>
+      <div class="form-group">
+        <label class="control-label" >Change password</label>
+        <input ng-minlength="5" ng-maxlength="50" ng-model="modified.password" type="password" name="newPassword" id="newPassword" class="form-control" />
+        <div ng-messages="accountForm.newPassword.$error" ng-messages-include="partials/messages.html"></div>
+      </div>
+      <div class="form-group">
+        <label class="control-label" >Confirm new password</label>
+        <input ng-model="modified.confirmPassword" type="password" name="confirmPassword" id="confirmPassword" class="form-control" compare-to="modified.password">
+        <div ng-messages="accountForm.confirmPassword.$error" ng-messages-include="partials/messages.html"></div>
+      </div>
+      <div class="form-group">
+        <button class="btn btn-primary" type="submit">Save changes</button>
+      </div>
+    </form>
 </div>
