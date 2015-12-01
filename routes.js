@@ -24,14 +24,14 @@
       api.getTeamsByLeague
     );
 
-    app.get('/api/getLeaguesByPlayer/:playerId', 
+    app.get('/api/getLeaguesForPlayer/', 
       auth.check, 
-      api.getLeaguesByPlayer
+      api.getLeaguesForPlayer
     );
 
-    app.get('/api/getAvailableLeaguesByPlayer/:playerId', 
+    app.get('/api/getAvailableLeaguesForPlayer/', 
       auth.check,
-      api.getAvailableLeaguesByPlayer
+      api.getAvailableLeaguesForPlayer
     );
 
     app.get('/api/getLeagueOwner/:leagueId', 
@@ -44,7 +44,7 @@
       api.getTeamOwner
     );
 
-    app.get('/api/getPlayer/:playerId', 
+    app.get('/api/getPlayer/', 
       auth.check,
       api.getPlayer
     );

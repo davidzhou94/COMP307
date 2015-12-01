@@ -52,11 +52,8 @@ exports.getTeamsByLeague = function(req, res) {
   simpleQuery(queryString, res);
 };
 
-exports.getLeaguesByPlayer = function(req, res) {
-  var playerId = req.params.playerId;
-  if (req.user.pid != playerId) {
-    return res.sendStatus(401);
-  }
+exports.getLeaguesForPlayer = function(req, res) {
+  var playerId = req.user.pid;
   var queryString = 
     'SELECT f_league.lid,' +
     '       f_league.description,' +
@@ -70,11 +67,8 @@ exports.getLeaguesByPlayer = function(req, res) {
   simpleQuery(queryString, res);
 };
 
-exports.getAvailableLeaguesByPlayer = function(req, res) {
-  var playerId = req.params.playerId;
-  if (req.user.pid != playerId) {
-    return res.sendStatus(401);
-  }
+exports.getAvailableLeaguesForPlayer = function(req, res) {
+  var playerId = req.user.pid;
   var queryString = 
     'SELECT f_league.lid,' +
     '       f_league.description,' +
@@ -114,10 +108,7 @@ exports.getTeamOwner = function(req, res) {
 };
 
 exports.getPlayer = function(req, res) {
-  var playerId = req.params.playerId;
-  if (req.user.pid != playerId) {
-    return res.sendStatus(401);
-  }
+  var playerId = req.user.pid;
   var queryString = 
     'SELECT pid, username, email' +
     '  FROM player' + 

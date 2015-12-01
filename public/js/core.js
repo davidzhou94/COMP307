@@ -4,6 +4,7 @@ var fantasyApp = angular.module('fantasyApp', [
   'ngRoute',
   'ngAnimate',
   'ngResource',
+  'ngMessages',
   'ui.bootstrap',
   'fantasyControllers',
   'fantasyServices'
@@ -32,7 +33,7 @@ fantasyApp.config(['$routeProvider', '$httpProvider',
         templateUrl : 'partials/league.html',
         controller : 'leagueController'
       }).
-      when('/home/:playerId', {
+      when('/home/', {
         templateUrl : 'partials/home.html',
         controller : 'homeController'
       }).

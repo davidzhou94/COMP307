@@ -1,6 +1,6 @@
 'use strict';
 
-var fantasyControllers = angular.module('fantasyControllers', ['ngMessages']);
+var fantasyControllers = angular.module('fantasyControllers', []);
 
 fantasyControllers.controller('defaultController', ['$scope', '$http', '$location', '$route', 'userService', 'alertService', 'menuService',
   function ($scope, $http, $location, $route, userService, alertService, menuService) {
@@ -61,7 +61,7 @@ fantasyControllers.controller('homeController', ['$scope', '$http', '$routeParam
   function ($scope, $http, $routeParams, $rootScope, $location, $uibModal, userService, menuService) {
     // when landing on the page, get all leagues for the given player and show them
     $scope.userInfo = userService;
-    $http.get('/api/getLeaguesByPlayer/' + $routeParams.playerId)
+    $http.get('/api/getLeaguesForPlayer/')
       .then(function(response) {
         $scope.leagues = response.data;
       },
@@ -115,7 +115,7 @@ fantasyControllers.controller('loginController', ['$scope', '$http', '$location'
     $http.get('/api/checkAuthenticated')
       .then(function(response) {
         if (response.data) {
-          $location.url('/home/' + response.data.pid);
+          $location.url('/home/');
         }
       });
   
@@ -129,7 +129,7 @@ fantasyControllers.controller('loginController', ['$scope', '$http', '$location'
           }else{
             userService.playerId = data.pid;
             userService.username = data.username;
-            $location.url('/home/' + data.pid); 
+            $location.url('/home/'); 
           }
         })
         .error(function(data) {
@@ -380,7 +380,7 @@ fantasyControllers.controller('joinLeagueController', ['$scope', '$http', '$loca
   function ($scope, $http, $location, $uibModal, userService) {
     $scope.userService = userService;
     // when landing on the page, get all leagues for the given player and show them
-    $http.get('/api/getAvailableLeaguesByPlayer/' + userService.playerId)
+    $http.get('/api/getAvailableLeaguesForPlayer/')
       .then(function(response) {
         $scope.leagues = response.data;
       },
@@ -446,7 +446,7 @@ fantasyControllers.controller('createLeagueModalController', ['$scope', '$uibMod
 fantasyControllers.controller('accountController', ['$scope', '$http', 'userService', 'alertService',
   function ($scope, $http, userService, alertService) {
     var original = { };
-    $http.get('/api/getPlayer/' + userService.playerId)
+    $http.get('/api/getPlayer/')
       .then(function(response) {
         original = response.data;
         $scope.modified = {
