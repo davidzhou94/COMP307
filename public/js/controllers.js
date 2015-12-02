@@ -206,7 +206,7 @@ fantasyControllers.controller('teamController', ['$scope', '$http', '$routeParam
         .then(function(response) {
           if (response.data.affectedRows > 0) {
             if (action === null) {
-              i = $scope.availableDrafts.length - 1;
+              var i = $scope.availableDrafts.length - 1;
               while (i >= 0) {
                 if ($scope.availableDrafts[i].actor_id === actor) {
                   $scope.availableDrafts[i].fulfilled = 0;
@@ -236,7 +236,7 @@ fantasyControllers.controller('teamController', ['$scope', '$http', '$routeParam
         .then(function(response) {
           if (response.data.affectedRows > 0) {
             if (action === null) {
-              i = $scope.selectedDrafts.length - 1;
+              var i = $scope.selectedDrafts.length - 1;
               while (i >= 0) {
                 if ($scope.selectedDrafts[i].actor_id === actor) {
                   $scope.availableDrafts.push($scope.selectedDrafts[i]);
